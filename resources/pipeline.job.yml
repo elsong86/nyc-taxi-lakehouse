@@ -1,0 +1,50 @@
+resources:
+  jobs:
+    taxi_pipeline:
+      name: nyc-taxi-${bundle.target}-pipeline
+      description: Incremental TLC downloads and Bronze/Silver/Gold processing; at most three new months per run by default.
+      max_concurrent_runs: 1
+      timeout_seconds: 7200
+      performance_target: STANDARD
+      queue:
+        enabled: false
+      tags:
+        project: nyc-taxi-lakehouse
+        environment: ${bundle.target}
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"
+        timezone_id: America/Los_Angeles
+        pause_status: ${var.schedule_pause_status}
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: start_month
+          default: ${var.start_month}
+        - name: end_month
+          default: ${var.end_month}
+        - name: max_new_months
+          default: ${var.max_new_months}
+        - name: reprocess
+          default: "false"
+      environments:
+        - environment_key: pipeline
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+      tasks:
+        - task_key: pipeline
+          environment_key: pipeline
+          timeout_seconds: 6600
+          max_retries: 1
+          min_retry_interval_millis: 60000
+          python_wheel_task:
+            package_name: nyc_taxi_lakehouse
+            entry_point: nyc-taxi-pipeline
+            named_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              start_month: "{{job.parameters.start_month}}"
+              end_month: "{{job.parameters.end_month}}"
+              max_new_months: "{{job.parameters.max_new_months}}"
+              reprocess: "{{job.parameters.reprocess}}"
+              job_run_id: "{{job.run_id}}"

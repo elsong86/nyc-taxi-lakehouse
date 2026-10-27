@@ -1,0 +1,37 @@
+bundle:
+  name: nyc-taxi-lakehouse
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: nyc_taxi_dev
+  start_month:
+    default: "2024-01"
+  end_month:
+    default: latest
+  max_new_months:
+    default: "3"
+  schedule_pause_status:
+    default: UNPAUSED
+
+artifacts:
+  pipeline:
+    type: whl
+    path: .
+    build: .venv/bin/python -m build --wheel
+    dynamic_version: true
+
+sync:
+  exclude:
+    - infra/**
+    - tests/**
+    - .venv/**
+
+targets:
+  dev:
+    default: true
+    mode: production
+    workspace:
+      root_path: /Workspace/${bundle.name}/${bundle.target}
