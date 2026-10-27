@@ -1,0 +1,4 @@
+subscription_id = "<azure-subscription-id>"
+databricks_host = "https://<workspace>.azuredatabricks.net"
+location        = "westus"
+environment     = "dev"
