@@ -1,0 +1,41 @@
+resources:
+  jobs:
+    freeze_dataset:
+      name: nyc-taxi-${bundle.target}-freeze-benchmark
+      description: Manual-only materialization of January–March 2024 benchmark tables.
+      max_concurrent_runs: 1
+      timeout_seconds: 1800
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: false
+      tags:
+        project: nyc-taxi-lakehouse
+        purpose: benchmark-snapshot
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: dataset_id
+          default: q1_2024
+        - name: start_month
+          default: "2024-01"
+        - name: end_month
+          default: "2024-03"
+      environments:
+        - environment_key: snapshot
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+      tasks:
+        - task_key: freeze
+          environment_key: snapshot
+          max_retries: 1
+          min_retry_interval_millis: 60000
+          python_wheel_task:
+            package_name: nyc_taxi_lakehouse
+            entry_point: nyc-taxi-freeze
+            named_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              dataset_id: "{{job.parameters.dataset_id}}"
+              start_month: "{{job.parameters.start_month}}"
+              end_month: "{{job.parameters.end_month}}"

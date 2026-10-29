@@ -1,0 +1,185 @@
+{
+  "baseline_id": "q1_2024",
+  "billing_collected_at": "2026-10-29T20:09:54.316441+00:00",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/f36dd6bc-5c74-4e99-971e-74a3da449bec_3c11a579-34a3-47e5-ad26-0b386e69e416.json",
+  "dataset": {
+    "selection": "Source file months 2024-01 through 2024-03, not a pickup timestamp filter.",
+    "materialization": "Separate managed Delta tables; not a clone of the original production file layout.",
+    "created_at": "2026-10-28T21:10:48.700380+00:00",
+    "source_versions": {
+      "bronze": 6,
+      "trips": 6,
+      "quarantine": 6
+    },
+    "source_files": [
+      {
+        "source_month": "2024-01",
+        "content_length": 49961641,
+        "sha256": "c4d59da7bbc8abaeeeb1727947ee93d9891a71acb42854bd80db1571b2030510"
+      },
+      {
+        "source_month": "2024-02",
+        "content_length": 50349284,
+        "sha256": "c76c43c18c6c6664080dd920baab4928988d5786a6b65980792ca7cd796f9f20"
+      },
+      {
+        "source_month": "2024-03",
+        "content_length": 60078280,
+        "sha256": "2d4cdc8fb96726cdd3803b13b02d2e61e71d45720aff0ebc693a8bdd1f249823"
+      }
+    ],
+    "bronze_rows": 9554778,
+    "valid_silver_rows": 9551977,
+    "quarantine_rows": 2801,
+    "raw_parquet_bytes": 160389205,
+    "active_delta_data_bytes": 988500178,
+    "storage_scope": "Active snapshot data files only; excludes logs, obsolete files, soft deletes and production copies.",
+    "tables": [
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_bronze",
+        "version": 0,
+        "num_files": 3,
+        "active_data_bytes": 473431449
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_trips",
+        "version": 0,
+        "num_files": 3,
+        "active_data_bytes": 512970251
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_quarantine",
+        "version": 0,
+        "num_files": 3,
+        "active_data_bytes": 182561
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_hourly_zone_demand",
+        "version": 0,
+        "num_files": 1,
+        "active_data_bytes": 1868619
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_monthly_fares",
+        "version": 0,
+        "num_files": 1,
+        "active_data_bytes": 2504
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_airport_activity",
+        "version": 0,
+        "num_files": 1,
+        "active_data_bytes": 41144
+      },
+      {
+        "table": "nyc_taxi_dev.benchmark.q1_2024_trip_patterns",
+        "version": 0,
+        "num_files": 1,
+        "active_data_bytes": 3650
+      }
+    ],
+    "layout": "Bronze, Silver and quarantine partitioned by source_month; Gold unpartitioned; no clustering."
+  },
+  "pipeline_observation": {
+    "job_run_id": "264596207956120",
+    "report_id": "d20d9d7a-409a-408b-9347-888683af9c3d",
+    "samples": 1,
+    "performance_target": "STANDARD",
+    "processed_rows": 9554778,
+    "timed_processing_seconds": 198.49771,
+    "full_job_seconds": 707.27,
+    "bronze_stage_seconds": 57.49804314200082,
+    "silver_stage_seconds": 78.06969010099783,
+    "gold_stage_seconds": 12.5677614419983,
+    "observed_dbus": "0.310591513888888877",
+    "list_price_compute_estimate_usd": "0.145978",
+    "list_price_usd_per_million_processed_rows": "0.01527801064556392623669539993",
+    "timing_scope": "Timed processing excludes earlier initialization, compute setup and final metrics persistence; individual stage timers do not cover every operation.",
+    "cost_scope": "Observed DBUs attributed to this one successful job run at effective USD list prices; not the Azure invoice, project total or a per-layer cost breakdown.",
+    "comparison_limit": "Single observational run, not a repeated controlled pipeline benchmark."
+  },
+  "query_baseline": {
+    "benchmark_run_id": "f36dd6bc-5c74-4e99-971e-74a3da449bec",
+    "measured_on": "2026-10-28",
+    "warehouse_size": "2X-Small",
+    "serverless": true,
+    "photon": true,
+    "clusters": 1,
+    "channel": "CHANNEL_NAME_CURRENT",
+    "dbsql_version": "2026.43",
+    "python_version": "3.12.13",
+    "sdk_version": "0.157.0",
+    "sql_connector_version": "4.8.0",
+    "measured_git_commit": "450d9de541d0d308502b893bf9cf3f716e7ab64c",
+    "measured_git_dirty": true,
+    "source_sha256_at_measurement": {
+      "benchmark.py": "3afdc229326a0118c7065d64fd2851e3c4af93c33d6a6e896b016393663f5a87",
+      "benchmark_snapshot.py": "4ba9e07d2bb2fe0172a6388d7932eafcb7b4ab61f2c6a63baeedb060f74d1219",
+      "transforms.py": "a03e09ade859d7a42a390ae5a96e546a18ec691e486814b78cbd235e2bfaf0cb"
+    },
+    "workload_sha256": "fcfc8e4b92e8551daa2898bd1ab94d973d38e8a405ed1ad9445225190e9ca7d3",
+    "warmups_per_query": 1,
+    "measured_repetitions_per_query": 3,
+    "sql_result_cache_enabled": false,
+    "io_cache": "Warm; not cleared between queries.",
+    "results_consistent_across_repetitions": true,
+    "queries": [
+      {
+        "name": "01_monthly_fares",
+        "layer": "silver",
+        "template_sha256": "ffe930f01e64acb0588bf2faabba87f9d05aa6c774be73734e790462ab739752",
+        "median_client_elapsed_ms": 708.0792079941602,
+        "median_engine_total_ms": 576,
+        "median_engine_execution_ms": 382,
+        "median_read_bytes": 67903788,
+        "median_read_files": 3,
+        "median_pruned_files": 0,
+        "median_remote_read_bytes": 0,
+        "median_spill_bytes": 0
+      },
+      {
+        "name": "02_weekly_zone_demand",
+        "layer": "silver",
+        "template_sha256": "e70696d9ce579a7bea8e421082aa6feb6a0411d7926f18452d99c87a0c982f83",
+        "median_client_elapsed_ms": 611.6474170048605,
+        "median_engine_total_ms": 483,
+        "median_engine_execution_ms": 293,
+        "median_read_bytes": 19154764,
+        "median_read_files": 1,
+        "median_pruned_files": 2,
+        "median_remote_read_bytes": 0,
+        "median_spill_bytes": 0
+      },
+      {
+        "name": "03_airport_corridors",
+        "layer": "silver",
+        "template_sha256": "0a3c9134672dc2655e2d82bef31b833f8ef70b756c838bb1a7644461606fdb1f",
+        "median_client_elapsed_ms": 575.7890000022599,
+        "median_engine_total_ms": 436,
+        "median_engine_execution_ms": 257,
+        "median_read_bytes": 52348627,
+        "median_read_files": 3,
+        "median_pruned_files": 0,
+        "median_remote_read_bytes": 0,
+        "median_spill_bytes": 0
+      },
+      {
+        "name": "04_gold_demand",
+        "layer": "gold",
+        "template_sha256": "5de584988d1311b8af48f3a38d7e2a8af7efd7a3428aef03876051b621284cc5",
+        "median_client_elapsed_ms": 410.2214590020594,
+        "median_engine_total_ms": 254,
+        "median_engine_execution_ms": 128,
+        "median_read_bytes": 1868619,
+        "median_read_files": 1,
+        "median_pruned_files": 0,
+        "median_remote_read_bytes": 0,
+        "median_spill_bytes": 0
+      }
+    ],
+    "warehouse_window_list_price_estimate_usd": "0.100916",
+    "warehouse_cost_status": "PROVISIONAL",
+    "warehouse_cost_scope": "Usage records overlapping the original measurement window; includes shared startup, idle and metadata overhead, not exact per-query cost. Excludes later report refreshes.",
+    "comparison_limit": "Compare equivalent results under matching data, workload and compute conditions; these four different queries do not establish Silver-versus-Gold speedups."
+  }
+}

@@ -11,12 +11,18 @@ dependencies = ["requests>=2.32,<3"]
 
 [project.optional-dependencies]
 dev = ["build>=1,<2", "pytest>=8,<9", "ruff>=0.9,<1", "pyspark>=3.5.4,<3.6"]
+benchmark = ["databricks-sdk>=0.60,<1", "databricks-sql-connector>=4,<5"]
 
 [project.scripts]
 nyc-taxi-pipeline = "nyc_taxi_lakehouse.cli:main"
+nyc-taxi-freeze = "nyc_taxi_lakehouse.benchmark_snapshot:main"
+nyc-taxi-benchmark = "nyc_taxi_lakehouse.benchmark:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+nyc_taxi_lakehouse = ["benchmark_sql/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

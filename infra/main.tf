@@ -10,11 +10,12 @@ locals {
   }
 
   schemas = {
-    raw    = "External volume containing original NYC TLC source files."
-    bronze = "Incrementally ingested source records and provenance."
-    silver = "Validated trips, reference data, and quarantined records."
-    gold   = "Demand, fare, airport, distance, and duration aggregates."
-    ops    = "Ingestion manifests, quality results, run metrics, and checkpoints."
+    raw       = "External volume containing original NYC TLC source files."
+    bronze    = "Incrementally ingested source records and provenance."
+    silver    = "Validated trips, reference data, and quarantined records."
+    gold      = "Demand, fare, airport, distance, and duration aggregates."
+    ops       = "Ingestion manifests, quality results, run metrics, and checkpoints."
+    benchmark = "Frozen datasets and measurements, separate from the growing production pipeline."
   }
 }
 
@@ -148,4 +149,12 @@ resource "databricks_volume" "checkpoints" {
   name         = "checkpoints"
   volume_type  = "MANAGED"
   comment      = "Streaming ingestion checkpoints. Managed by Terraform."
+}
+
+resource "databricks_volume" "benchmark_reports" {
+  catalog_name = databricks_catalog.project.name
+  schema_name  = databricks_schema.layer["benchmark"].name
+  name         = "reports"
+  volume_type  = "MANAGED"
+  comment      = "Versioned benchmark manifests and measurement reports. Managed by Terraform."
 }
