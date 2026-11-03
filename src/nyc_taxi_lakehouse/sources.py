@@ -143,6 +143,13 @@ def validate_download(path: Path, expected_bytes: int) -> None:
             raise ValueError(f"Unexpected taxi zone CSV schema: {header}")
 
 
+def verified_landed_file(destination: Path, record: dict) -> tuple[dict, int]:
+    validate_download(destination, record["content_length"])
+    if sha256_file(destination) != record["sha256"]:
+        raise ValueError(f"Landed file checksum mismatch: {destination}")
+    return record, 0
+
+
 def land_file(client: requests.Session, destination: Path, remote: dict) -> tuple[dict, int]:
     manifest_path = destination.with_suffix(destination.suffix + ".manifest.json")
     if manifest_path.exists():
@@ -152,10 +159,7 @@ def land_file(client: requests.Session, destination: Path, remote: dict) -> tupl
             LOGGER.warning("Repairing interrupted landing manifest: %s", manifest_path)
         else:
             check_revision(record, remote)
-            validate_download(destination, record["content_length"])
-            if sha256_file(destination) != record["sha256"]:
-                raise ValueError(f"Landed file checksum mismatch: {destination}")
-            return record, 0
+            return verified_landed_file(destination, record)
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="nyc-taxi-") as directory:

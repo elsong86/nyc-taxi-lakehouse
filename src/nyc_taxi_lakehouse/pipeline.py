@@ -3,6 +3,7 @@ import logging
 import time
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 
 from pyspark.sql import functions as F
 
@@ -16,6 +17,7 @@ from nyc_taxi_lakehouse.sources import (
     select_months,
     session,
     trip_url,
+    verified_landed_file,
 )
 from nyc_taxi_lakehouse.transforms import bronze_records, gold_tables, silver_records
 
@@ -88,7 +90,7 @@ def validate_outputs(spark, config: Config) -> dict:
     return {"bronze_rows": bronze, "valid_rows": valid, "quarantine_rows": quarantine}
 
 
-def run(spark, config: Config) -> dict:
+def run(spark, config: Config, *, pinned_inputs: dict | None = None) -> dict:
     spark.conf.set("spark.sql.session.timeZone", "UTC")
     initialize(spark, config)
     run_id = str(uuid.uuid4())
@@ -136,12 +138,21 @@ def run(spark, config: Config) -> dict:
                 for row in spark.table(config.table("ops", "file_manifest")).collect()
             }
             months = stage(
-                "discover", lambda: discover(client, config.start_month, config.end_month)
+                "discover",
+                lambda: (
+                    sorted(pinned_inputs["months"])
+                    if pinned_inputs is not None
+                    else discover(client, config.start_month, config.end_month)
+                ),
             )
             # Detect upstream revisions rather than silently mixing different historical snapshots.
             remotes = {}
             for month in months:
-                remotes[month] = remote_metadata(client, trip_url(month))
+                remotes[month] = (
+                    pinned_inputs["months"][month]
+                    if pinned_inputs is not None
+                    else remote_metadata(client, trip_url(month))
+                )
                 if month in previous:
                     check_revision(previous[month], remotes[month])
             completed = {m for m, record in previous.items() if record["status"] == "COMPLETE"}
@@ -149,10 +160,18 @@ def run(spark, config: Config) -> dict:
             result["selected_months"] = selected
             LOGGER.info("Selected months: %s", selected)
             if selected:
-                zone_path = config.landing / "reference" / "taxi_zone_lookup.csv"
+                zone_path = (
+                    Path(pinned_inputs["zones"]["path"])
+                    if pinned_inputs is not None
+                    else config.landing / "reference" / "taxi_zone_lookup.csv"
+                )
                 _, zone_bytes = stage(
                     "land_zones",
-                    lambda: land_file(client, zone_path, remote_metadata(client, ZONE_URL)),
+                    lambda: (
+                        verified_landed_file(zone_path, pinned_inputs["zones"])
+                        if pinned_inputs is not None
+                        else land_file(client, zone_path, remote_metadata(client, ZONE_URL))
+                    ),
                 )
                 result["downloaded_bytes"] += zone_bytes
                 zones = (
@@ -178,7 +197,12 @@ def run(spark, config: Config) -> dict:
                 for month in selected:
                     path = config.trip_path(month)
                     landed, downloaded = stage(
-                        f"land_{month}", lambda: land_file(client, path, remotes[month])
+                        f"land_{month}",
+                        lambda: (
+                            verified_landed_file(path, remotes[month])
+                            if pinned_inputs is not None
+                            else land_file(client, path, remotes[month])
+                        ),
                     )
                     result["downloaded_bytes"] += downloaded
                     record = previous.get(month)

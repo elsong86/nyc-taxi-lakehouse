@@ -110,6 +110,62 @@ def query_rows(cursor, statement: str, parameters=None) -> list[dict]:
     return [dict(zip(names, row, strict=True)) for row in cursor.fetchall()]
 
 
+def delta_write_metrics(history: list[dict], after_version: int, through_version: int) -> dict:
+    records = sorted(
+        (row for row in history if after_version < row["version"] <= through_version),
+        key=lambda row: row["version"],
+    )
+    if [row["version"] for row in records] != list(range(after_version + 1, through_version + 1)):
+        raise ValueError("Delta write history is incomplete for the measured version interval.")
+    fields = {
+        "CREATE OR REPLACE TABLE AS SELECT": (
+            "numOutputBytes",
+            "numRemovedBytes",
+            "numFiles",
+            "numRemovedFiles",
+        ),
+        "MERGE": (
+            "numTargetBytesAdded",
+            "numTargetBytesRemoved",
+            "numTargetFilesAdded",
+            "numTargetFilesRemoved",
+        ),
+        "OPTIMIZE": ("numAddedBytes", "numRemovedBytes", "numAddedFiles", "numRemovedFiles"),
+    }
+    values = {
+        name: []
+        for name in (
+            "data_bytes_added",
+            "data_bytes_removed",
+            "data_files_added",
+            "data_files_removed",
+        )
+    }
+    for row in records:
+        if row["operation"] not in fields:
+            raise ValueError(f"Unexpected operation in measured Delta history: {row['operation']}")
+        metrics = row["operationMetrics"]
+        if isinstance(metrics, str):
+            metrics = json.loads(metrics)
+        if not isinstance(metrics, dict):
+            raise ValueError("Delta operation metrics must be a mapping or JSON object.")
+        for name, key in zip(values, fields[row["operation"]], strict=True):
+            values[name].append(int(metrics[key]) if metrics.get(key) is not None else None)
+    result = {
+        name: sum(items) if all(item is not None for item in items) else None
+        for name, items in values.items()
+    }
+    return {
+        "status": "COMPLETE"
+        if all(value is not None for value in result.values())
+        else "INCOMPLETE",
+        **result,
+        "versions": [row["version"] for row in records],
+        "scope": "Delta data-file bytes and files, including intervening compaction; excludes "
+        "transaction logs, deletion-vector sidecars, source reads and storage transactions.",
+    }
+
+
 def frozen_versions(cursor, snapshot: dict) -> dict:
     return {
         table: int(query_rows(cursor, f"DESCRIBE HISTORY {table} LIMIT 1")[0]["version"])
@@ -151,19 +207,22 @@ def collect_profiles(client, measurements: list[dict], timeout_seconds: int = 90
     return sorted(pending)
 
 
-def collect_billing(cursor, catalog: str, job_id: str, warehouse_id: str, window: dict) -> dict:
+def collect_billing(
+    cursor, catalog: str, job_id: str, warehouse_id: str, window: dict, *, contexts=None
+) -> dict:
     lookback_start = datetime.fromisoformat(window["started_at"]) - timedelta(days=7)
     window_end = datetime.fromisoformat(window["ended_at"])
-    contexts = query_rows(
-        cursor,
-        f"SELECT job_run_id, min(started_at) AS started_at, "
-        "sum(CASE WHEN status = 'SUCCEEDED' THEN processed_rows ELSE 0 END) AS processed_rows, "
-        "concat_ws(',', sort_array(collect_set(status))) AS processing_status "
-        f"FROM {catalog}.ops.pipeline_runs "
-        "WHERE started_at >= :lookback_start AND started_at <= :window_end "
-        "GROUP BY job_run_id",
-        {"lookback_start": lookback_start, "window_end": window_end},
-    )
+    if contexts is None:
+        contexts = query_rows(
+            cursor,
+            f"SELECT job_run_id, min(started_at) AS started_at, "
+            "sum(CASE WHEN status = 'SUCCEEDED' THEN processed_rows ELSE 0 END) AS processed_rows, "
+            "concat_ws(',', sort_array(collect_set(status))) AS processing_status "
+            f"FROM {catalog}.ops.pipeline_runs "
+            "WHERE started_at >= :lookback_start AND started_at <= :window_end "
+            "GROUP BY job_run_id",
+            {"lookback_start": lookback_start, "window_end": window_end},
+        )
     price_query = """
         SELECT u.usage_metadata.job_run_id AS job_run_id,
                u.sku_name, u.usage_unit, count(*) AS usage_records,

@@ -1,6 +1,8 @@
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 
+from nyc_taxi_lakehouse.gold import GOLD_KEYS, affected_rows
+
 SOURCE_COLUMNS = [
     "VendorID",
     "tpep_pickup_datetime",
@@ -124,34 +126,53 @@ def silver_records(bronze: DataFrame, zones: DataFrame) -> DataFrame:
     )
 
 
-def gold_tables(valid: DataFrame) -> dict[str, DataFrame]:
-    dated = (
+def dated_trips(valid: DataFrame) -> DataFrame:
+    return (
         valid.withColumn("pickup_date", F.to_date("pickup_at"))
         .withColumn("pickup_hour", F.hour("pickup_at"))
         .withColumn("pickup_month", F.date_format("pickup_at", "yyyy-MM"))
     )
+
+
+def gold_tables(valid: DataFrame, *, changed: DataFrame | None = None) -> dict[str, DataFrame]:
+    """Recompute all groups, or only groups touched by newly appended valid rows."""
+    dated = dated_trips(valid)
+    touched = dated_trips(changed) if changed is not None else None
+
+    def selected(name: str, current: DataFrame) -> DataFrame:
+        if touched is None:
+            return current
+        keys = touched.filter("airport_trip") if name == "airport_activity" else touched
+        return affected_rows(current, keys, GOLD_KEYS[name])
+
     return {
-        "hourly_zone_demand": dated.groupBy(
+        "hourly_zone_demand": selected("hourly_zone_demand", dated)
+        .groupBy(
             "pickup_date", "pickup_hour", "pickup_location_id", "pickup_borough", "pickup_zone"
-        ).agg(
+        )
+        .agg(
             F.count("*").alias("trip_count"),
             F.sum("total_amount").alias("net_total_amount"),
         ),
-        "monthly_fares": dated.groupBy("pickup_month").agg(
+        "monthly_fares": selected("monthly_fares", dated)
+        .groupBy("pickup_month")
+        .agg(
             F.count("*").alias("trip_count"),
             F.sum("fare_amount").alias("net_fare_amount"),
             F.sum("total_amount").alias("net_total_amount"),
             F.avg("total_amount").alias("average_total_amount"),
             F.sum(F.col("is_refund").cast("long")).alias("refund_record_count"),
         ),
-        "airport_activity": dated.filter("airport_trip")
+        "airport_activity": selected("airport_activity", dated.filter("airport_trip"))
         .groupBy("pickup_month", "pickup_location_id", "dropoff_location_id")
         .agg(
             F.count("*").alias("trip_count"),
             F.avg("duration_minutes").alias("average_duration_minutes"),
             F.sum("total_amount").alias("net_total_amount"),
         ),
-        "trip_patterns": dated.groupBy("pickup_month", "pickup_hour").agg(
+        "trip_patterns": selected("trip_patterns", dated)
+        .groupBy("pickup_month", "pickup_hour")
+        .agg(
             F.count("*").alias("trip_count"),
             F.avg("trip_distance_miles").alias("average_distance_miles"),
             F.avg("duration_minutes").alias("average_duration_minutes"),

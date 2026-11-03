@@ -1,0 +1,151 @@
+{
+  "experiment_id": "perf_20261030_a",
+  "status": "MEASURED_AND_VERIFIED",
+  "measured_on": "2026-10-30",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/pipeline_experiments/perf_20261030_a/experiment_report.json",
+  "job_id": "824241423958859",
+  "git_parent_commit": "b0ecbee91d480d9cf7d3dfbb77c4fc5ec1ffb4ad",
+  "measured_git_dirty": true,
+  "source_sha256": {
+    "config.py": "42d78e18a2196d0d2b51224b5369c439b87b4d58462319d968bfa7ea9d25beb0",
+    "pipeline.py": "7ade9ea1764b59f74880d8cfa5afda70bd845bef77de89a9a9fbd8f67577fcb4",
+    "pipeline_experiment.py": "fe36ae9515af1ef29cf6fe23c1f025ab2121bb4e185e027473a95fe96ef3d704",
+    "sources.py": "a05c6a32c28eff7d0c3324f2bc4c50146e76bdf87b919434f815d687ea628300",
+    "transforms.py": "a03e09ade859d7a42a390ae5a96e546a18ec691e486814b78cbd235e2bfaf0cb"
+  },
+  "dataset": {
+    "baseline_reference": "baseline_q1_2024.json",
+    "source_months": ["2024-01", "2024-02", "2024-03"],
+    "input_manifest_sha256": "8fffb06f7d542f1c8a9d1245cfe69c14426b74bfeffcb4b08e1836ed47992bd0",
+    "processed_input_rows_per_sample": 9554778,
+    "valid_silver_rows_per_sample": 9551977,
+    "quarantine_rows_per_sample": 2801,
+    "source_parquet_bytes_per_sample": 160389205,
+    "newly_downloaded_bytes_per_sample": 0,
+    "scope": "Checksum-pinned Q1 Parquet and zone lookup copied once from Azure landing. Live discovery and internet downloads excluded; new empty schemas per sample, with no task retries. Separate prepare and audit runs excluded from measured runtime and cost."
+  },
+  "configuration": {
+    "environment_version": "4",
+    "repetitions_per_mode": 3,
+    "concurrent_runs": 1,
+    "order": [
+      "standard_1",
+      "performance_optimized_1",
+      "performance_optimized_2",
+      "standard_2",
+      "standard_3",
+      "performance_optimized_3"
+    ],
+    "cache_scope": "Serverless physical cache state is not controlled; this is not a cold-cache experiment."
+  },
+  "output_audit": {
+    "status": "PASSED",
+    "samples": 6,
+    "tables_per_sample": 7,
+    "scope": "Exact Bronze/Silver/quarantine row multisets excluding per-run provenance. Gold keys and exact metrics match; floating aggregates use absolute 1e-9 plus relative 1e-9 tolerance. Frozen baseline table versions unchanged."
+  },
+  "samples": [
+    {
+      "sample_id": "standard_1",
+      "job_run_id": "439231191932953",
+      "performance_target": "STANDARD",
+      "job_duration_seconds": 558.317,
+      "pipeline_call_seconds": 218.0177260600001,
+      "timed_processing_seconds": 207.553666
+    },
+    {
+      "sample_id": "performance_optimized_1",
+      "job_run_id": "264342436179684",
+      "performance_target": "PERFORMANCE_OPTIMIZED",
+      "job_duration_seconds": 230.955,
+      "pipeline_call_seconds": 194.43851888900008,
+      "timed_processing_seconds": 184.343163
+    },
+    {
+      "sample_id": "performance_optimized_2",
+      "job_run_id": "54071163987905",
+      "performance_target": "PERFORMANCE_OPTIMIZED",
+      "job_duration_seconds": 233.703,
+      "pipeline_call_seconds": 198.77379248500006,
+      "timed_processing_seconds": 189.152551
+    },
+    {
+      "sample_id": "standard_2",
+      "job_run_id": "391012681294518",
+      "performance_target": "STANDARD",
+      "job_duration_seconds": 545.009,
+      "pipeline_call_seconds": 199.38535869500015,
+      "timed_processing_seconds": 188.490345
+    },
+    {
+      "sample_id": "standard_3",
+      "job_run_id": "872158117752671",
+      "performance_target": "STANDARD",
+      "job_duration_seconds": 615.588,
+      "pipeline_call_seconds": 210.21126404400002,
+      "timed_processing_seconds": 198.636851
+    },
+    {
+      "sample_id": "performance_optimized_3",
+      "job_run_id": "467317722416005",
+      "performance_target": "PERFORMANCE_OPTIMIZED",
+      "job_duration_seconds": 250.306,
+      "pipeline_call_seconds": 209.71759510000015,
+      "timed_processing_seconds": 198.715791
+    }
+  ],
+  "summary": [
+    {
+      "performance_target": "STANDARD",
+      "samples": 3,
+      "min_job_duration_seconds": 545.009,
+      "median_job_duration_seconds": 558.317,
+      "max_job_duration_seconds": 615.588,
+      "median_pipeline_call_seconds": 210.21126404400002,
+      "median_timed_processing_seconds": 198.636851,
+      "median_full_job_rows_per_second": 17113.53585866094,
+      "median_stage_seconds": {
+        "bronze": 57.76312774500025,
+        "silver": 79.25890531800019,
+        "gold": 12.335576947999925,
+        "reconcile": 1.62071916900004
+      },
+      "billing_status": "OBSERVED_RECORDS",
+      "median_list_price_compute_estimate_usd": 0.1394,
+      "median_list_price_usd_per_million_processed_rows": 0.01458955927599783
+    },
+    {
+      "performance_target": "PERFORMANCE_OPTIMIZED",
+      "samples": 3,
+      "min_job_duration_seconds": 230.955,
+      "median_job_duration_seconds": 233.703,
+      "max_job_duration_seconds": 250.306,
+      "median_pipeline_call_seconds": 198.77379248500006,
+      "median_timed_processing_seconds": 189.152551,
+      "median_full_job_rows_per_second": 40884.27619671121,
+      "median_stage_seconds": {
+        "bronze": 57.556743521000044,
+        "silver": 75.76603008200004,
+        "gold": 11.772101783000153,
+        "reconcile": 1.5439920540000003
+      },
+      "billing_status": "OBSERVED_RECORDS",
+      "median_list_price_compute_estimate_usd": 0.330759,
+      "median_list_price_usd_per_million_processed_rows": 0.034617130821877805
+    }
+  ],
+  "observed_median_job_duration_reduction_percent": 58.14152175197961,
+  "observed_median_pipeline_call_reduction_percent": 5.440941336333882,
+  "timing_scope": "Databricks job start-to-end duration includes startup, schema setup, input verification and metrics persistence. Pipeline-call timer includes initialization and report writes; the internal processing timer excludes those operations. These are replay measurements, not directly comparable to the original ingestion observation.",
+  "billing_collected_at": "2026-11-02T20:08:11.216050+00:00",
+  "billing_scope": "Usage records are now available for all six measured runs. Estimates use signed DBU usage and effective USD list prices, not an invoice, and may receive later corrections; preparation, audit, SQL billing collection and storage costs are outside the measured-run comparison.",
+  "observed_median_performance_optimized_cost_ratio": 2.372733142037303,
+  "interpretation": "Performance Optimized had approximately 58% lower median job wall-clock duration, with only approximately 5% lower median pipeline-call duration, at approximately 2.37 times the median job compute estimate. Most of the observed runtime benefit was outside pipeline execution. Standard remains appropriate for this non-latency-sensitive daily pipeline; three repetitions do not support p95 or broad statistical claims.",
+  "production": {
+    "performance_target": "STANDARD",
+    "schedule": "0 0 8 * * ?",
+    "timezone": "America/Los_Angeles",
+    "pause_status": "UNPAUSED",
+    "scope": "Production tables and frozen baseline were not rewritten by the experiment. A missing production wheel dependency was restored by a full deployment; the experiment uses a separate bundle root."
+  }
+}

@@ -17,6 +17,8 @@ benchmark = ["databricks-sdk>=0.60,<1", "databricks-sql-connector>=4,<5"]
 nyc-taxi-pipeline = "nyc_taxi_lakehouse.cli:main"
 nyc-taxi-freeze = "nyc_taxi_lakehouse.benchmark_snapshot:main"
 nyc-taxi-benchmark = "nyc_taxi_lakehouse.benchmark:main"
+nyc-taxi-experiment = "nyc_taxi_lakehouse.pipeline_experiment:main"
+nyc-taxi-gold-experiment = "nyc_taxi_lakehouse.gold_experiment:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

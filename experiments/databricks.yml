@@ -1,0 +1,103 @@
+bundle:
+  name: nyc-taxi-pipeline-experiments
+
+artifacts:
+  pipeline:
+    type: whl
+    path: ..
+    build: .venv/bin/python -m build --wheel
+    dynamic_version: true
+
+variables:
+  catalog:
+    default: nyc_taxi_dev
+
+resources:
+  jobs:
+    performance_comparison:
+      name: nyc-taxi-dev-pipeline-performance-experiment
+      description: Manual-only isolated Q1 replay; performance mode overridden per run.
+      max_concurrent_runs: 1
+      timeout_seconds: 7200
+      performance_target: STANDARD
+      queue:
+        enabled: false
+      tags:
+        project: nyc-taxi-lakehouse
+        purpose: pipeline-performance-experiment
+      parameters:
+        - name: phase
+          default: measure
+        - name: experiment_id
+          default: unset
+        - name: sample_id
+          default: unset
+        - name: performance_target
+          default: STANDARD
+      environments:
+        - environment_key: experiment
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+      tasks:
+        - task_key: experiment
+          environment_key: experiment
+          max_retries: 0
+          python_wheel_task:
+            package_name: nyc_taxi_lakehouse
+            entry_point: nyc-taxi-experiment
+            named_parameters:
+              catalog: ${var.catalog}
+              phase: "{{job.parameters.phase}}"
+              experiment_id: "{{job.parameters.experiment_id}}"
+              sample_id: "{{job.parameters.sample_id}}"
+              performance_target: "{{job.parameters.performance_target}}"
+              job_run_id: "{{job.run_id}}"
+    gold_comparison:
+      name: nyc-taxi-dev-gold-incremental-experiment
+      description: Manual-only full Gold rebuild versus affected-key recomputation for March.
+      max_concurrent_runs: 1
+      timeout_seconds: 3600
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: false
+      tags:
+        project: nyc-taxi-lakehouse
+        purpose: gold-incremental-experiment
+      parameters:
+        - name: phase
+          default: measure
+        - name: experiment_id
+          default: unset
+        - name: sample_id
+          default: unset
+        - name: performance_target
+          default: PERFORMANCE_OPTIMIZED
+      environments:
+        - environment_key: gold
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+      tasks:
+        - task_key: gold
+          environment_key: gold
+          max_retries: 0
+          python_wheel_task:
+            package_name: nyc_taxi_lakehouse
+            entry_point: nyc-taxi-gold-experiment
+            named_parameters:
+              catalog: ${var.catalog}
+              phase: "{{job.parameters.phase}}"
+              experiment_id: "{{job.parameters.experiment_id}}"
+              sample_id: "{{job.parameters.sample_id}}"
+              performance_target: "{{job.parameters.performance_target}}"
+              job_run_id: "{{job.run_id}}"
+
+targets:
+  dev:
+    default: true
+    mode: production
+    workspace:
+      root_path: /Workspace/nyc-taxi-lakehouse/pipeline-experiments

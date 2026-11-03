@@ -1,0 +1,121 @@
+{
+  "experiment_id": "gold_20261102_a",
+  "status": "MEASURED_AND_VERIFIED",
+  "measured_on": "2026-11-02",
+  "job_id": "423663284180647",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/gold_experiments/gold_20261102_a/experiment_report.json",
+  "measurement_code_sha256": {
+    "benchmark.py": "7412e1d490947cec374dbe0564e924214d9743ddd2b1ba97fde924f62b5e4cb8",
+    "benchmark_snapshot.py": "4ba9e07d2bb2fe0172a6388d7932eafcb7b4ab61f2c6a63baeedb060f74d1219",
+    "config.py": "42d78e18a2196d0d2b51224b5369c439b87b4d58462319d968bfa7ea9d25beb0",
+    "gold.py": "33c91bb853e3bf0a948a0910ac5900ec8df3370209c04450cd7e732a6d6ca023",
+    "gold_experiment.py": "2f5026968fb6ce06d6dbb2f0ae3cf4db32636be300fbe4129a6b1b9f50712d6e",
+    "pipeline_experiment.py": "0eaf64f1794f2c2316ba84ea444857e194cf8c6b1ccf4bb3d522682b452131ad",
+    "transforms.py": "0af3d28e6ea385cd8fc908e265b4d8ad69ba601d272a9d3e0b37626190a8290c"
+  },
+  "source_wheel": {
+    "path": "/Volumes/nyc_taxi_dev/benchmark/reports/gold_experiments/gold_20261102_a/measured_sources.whl",
+    "sha256": "fe9fadcc17feef67a93ea52310a1d984a628ade5a7fcc6a89b3b45318714eb94",
+    "scope": "Source-identical build verified against every measured source hash; the bundle separately applied dynamic version metadata to the runtime wheel."
+  },
+  "dataset": {
+    "baseline_reference": "baseline_q1_2024.json",
+    "input_manifest_sha256": "930186e1a00d954769b7044f2a1c8b1d451551c78f40f5457ead353c189cb854",
+    "silver_rows_by_source_month": {
+      "2024-01": 2963754,
+      "2024-02": 3006723,
+      "2024-03": 3581500
+    },
+    "initial_silver_rows": 5970477,
+    "new_march_silver_rows": 3581500,
+    "available_q1_silver_rows": 9551977,
+    "scope": "Gold-only March append to identical January-February seed Gold tables, deep-cloned outside measured runs. Both strategies read the pinned Q1 Silver snapshot. No Bronze/Silver processing or internet download is included."
+  },
+  "configuration": {
+    "performance_target": "PERFORMANCE_OPTIMIZED",
+    "environment_version": "4",
+    "repetitions_per_strategy": 3,
+    "concurrent_runs": 1,
+    "order": ["full_1", "incremental_1", "incremental_2", "full_2", "full_3", "incremental_3"],
+    "cache_scope": "Physical serverless cache state was not cleared or controlled."
+  },
+  "group_counts": {
+    "hourly_zone_demand": {"initial_groups": 151881, "affected_groups": 89010, "q1_groups": 240874},
+    "monthly_fares": {"initial_groups": 7, "affected_groups": 4, "q1_groups": 8},
+    "airport_activity": {"initial_groups": 1887, "affected_groups": 962, "q1_groups": 2847},
+    "trip_patterns": {"initial_groups": 54, "affected_groups": 28, "q1_groups": 79}
+  },
+  "samples": [
+    {
+      "sample_id": "full_1", "strategy": "full", "job_run_id": "859792248740436",
+      "gold_operation_seconds": 18.030489840999962, "job_duration_seconds": 67.6,
+      "data_bytes_added": 1915917, "active_files": 4
+    },
+    {
+      "sample_id": "incremental_1", "strategy": "incremental", "job_run_id": "24033449925514",
+      "gold_operation_seconds": 32.666953021000154, "job_duration_seconds": 85.685,
+      "data_bytes_added": 701223, "active_files": 10
+    },
+    {
+      "sample_id": "incremental_2", "strategy": "incremental", "job_run_id": "114271476042011",
+      "gold_operation_seconds": 33.622320973000114, "job_duration_seconds": 86.673,
+      "data_bytes_added": 701160, "active_files": 10
+    },
+    {
+      "sample_id": "full_2", "strategy": "full", "job_run_id": "396200783453174",
+      "gold_operation_seconds": 11.233012173000134, "job_duration_seconds": 46.186,
+      "data_bytes_added": 1915921, "active_files": 4
+    },
+    {
+      "sample_id": "full_3", "strategy": "full", "job_run_id": "920120895376649",
+      "gold_operation_seconds": 11.303988724999954, "job_duration_seconds": 44.107,
+      "data_bytes_added": 1915917, "active_files": 4
+    },
+    {
+      "sample_id": "incremental_3", "strategy": "incremental", "job_run_id": "269326382772769",
+      "gold_operation_seconds": 21.725034898999866, "job_duration_seconds": 55.477,
+      "data_bytes_added": 679144, "active_files": 10
+    }
+  ],
+  "summary": [
+    {
+      "strategy": "full", "samples": 3,
+      "median_gold_operation_seconds": 11.303988724999954,
+      "min_gold_operation_seconds": 11.233012173000134,
+      "max_gold_operation_seconds": 18.030489840999962,
+      "median_job_duration_seconds": 46.186,
+      "median_data_bytes_added": 1915917,
+      "median_data_files_added": 4,
+      "median_active_files": 4,
+      "median_active_data_bytes": 1915917,
+      "billing_status": "PENDING",
+      "median_job_list_price_compute_estimate_usd": null
+    },
+    {
+      "strategy": "incremental", "samples": 3,
+      "median_gold_operation_seconds": 32.666953021000154,
+      "min_gold_operation_seconds": 21.725034898999866,
+      "max_gold_operation_seconds": 33.622320973000114,
+      "median_job_duration_seconds": 85.685,
+      "median_data_bytes_added": 701160,
+      "median_data_files_added": 8,
+      "median_active_files": 10,
+      "median_active_data_bytes": 1913225,
+      "billing_status": "PENDING",
+      "median_job_list_price_compute_estimate_usd": null
+    }
+  ],
+  "output_audit": {
+    "status": "PASSED",
+    "samples": 6,
+    "tables_per_sample": 4,
+    "scope": "All four Gold outputs equal frozen Q1: exact keys, counts and decimal metrics; floating aggregates allow absolute 1e-9 plus relative 1e-9 tolerance. Frozen input and seed versions unchanged."
+  },
+  "observed_incremental_gold_time_ratio": 2.8898607222381396,
+  "observed_data_bytes_added_reduction_percent": 63.403425096181095,
+  "billing_collected_at": "2026-11-02T19:26:46.104933+00:00",
+  "billing_scope": "Measured-run usage was pending, not zero. Job cost includes startup and metadata reporting, not solely the Gold timer. Preparation, auditing, subsequent metrics collection and storage are excluded from the measured-run comparison.",
+  "write_metrics_scope": "Complete post-run Delta history from seed version through each recorded measured version, including automatic compaction. Data-file bytes exclude transaction logs, deletion-vector sidecars, source reads and storage transactions. Enrichment did not rerun workloads; original source hashes are retained and collector hashes are in the full report.",
+  "interpretation": "Affected-key recomputation and MERGE wrote approximately 63.4% fewer data-file bytes but took 2.89 times as long for Gold processing and left more active files. Keep full Gold rebuilds at this measured scale; this is not evidence that incremental processing is always slower. This append-only experiment does not validate corrections/deletions or a future production rollout.",
+  "production_changed": false
+}
