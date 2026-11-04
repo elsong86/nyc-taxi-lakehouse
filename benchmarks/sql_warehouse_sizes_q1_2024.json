@@ -1,0 +1,195 @@
+{
+  "experiment_id": "sql_sizes_20261102_a",
+  "status": "MEASURED_AND_VERIFIED",
+  "measured_on_local_date": "2026-11-02",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/sql_sizes_20261102_a_controller.json",
+  "dataset": {
+    "baseline_reference": "baseline_q1_2024.json",
+    "dataset_id": "q1_2024",
+    "valid_silver_rows": 9551977,
+    "scope": "Unmodified frozen January-March source-month snapshot; no new pipeline runs or alternative table layouts."
+  },
+  "configuration": {
+    "warehouse_ids": {
+      "2X-Small": "919966835b70007d",
+      "X-Small": "25ce0220d15c1e6f"
+    },
+    "warehouse_type": "PRO",
+    "enable_serverless_compute": true,
+    "enable_photon": true,
+    "min_num_clusters": 1,
+    "max_num_clusters": 1,
+    "auto_stop_mins": 5,
+    "channel": "CHANNEL_NAME_CURRENT",
+    "dbsql_version": "2026.43",
+    "workload_sha256": "fcfc8e4b92e8551daa2898bd1ab94d973d38e8a405ed1ad9445225190e9ca7d3",
+    "sessions_per_size": 3,
+    "measured_repetitions_per_query_per_session": 3,
+    "warmups_per_query_per_session": 1,
+    "order": ["2xs_1", "xs_1", "xs_2", "2xs_2", "2xs_3", "xs_3"],
+    "cache_policy": "SQL result caching disabled and verified in each persistent session; one warmup per query per session. Physical I/O caches were not cleared or controlled.",
+    "source_hashes": {
+      "first_session_benchmark_py": "fad75c36c5010a47672d4c0ffe6e41a81809fede2422282eeb2ee07d0e2fb70e",
+      "remaining_sessions_benchmark_py": "5994e9e070cd098f4348e04893ca5281133ab8a7e3281e47a32a25a056d0785f",
+      "scope": "Only the shutdown helper changed after the first session: timed-out stop requests now check actual state and retry. Query SQL, timing, result hashing and profile collection were unchanged. Full source manifests are retained in each session report."
+    }
+  },
+  "sessions": [
+    {
+      "sample_id": "2xs_1", "size": "2X-Small",
+      "benchmark_run_id": "483108d1-fdfd-4d4a-aaa5-8b7246589696",
+      "report_id": "da29c4db-5dbc-469c-b090-ee01c77c085a",
+      "cleanup_scope": "Queries completed; initial shutdown timed out. Original report retained WAREHOUSE_STOP_FAILED. Controller recovered measurements without rerunning queries and separately verified shutdown. Original measurement window ends at query completion, not verified shutdown."
+    },
+    {
+      "sample_id": "xs_1", "size": "X-Small",
+      "benchmark_run_id": "0af44005-595a-48ed-b556-8c7d7d09ddda",
+      "report_id": "ea256d13-6bc4-4c75-942e-2b81f1b37622"
+    },
+    {
+      "sample_id": "xs_2", "size": "X-Small",
+      "benchmark_run_id": "64957e67-0971-40b2-942c-f09996beab69",
+      "report_id": "4e93878e-256b-4b00-a34b-f2d31e4d7995"
+    },
+    {
+      "sample_id": "2xs_2", "size": "2X-Small",
+      "benchmark_run_id": "50750456-888a-4cf3-9bb9-61c2350f4afd",
+      "report_id": "3b9f0dac-c788-463e-8da7-d17e95f2ba57"
+    },
+    {
+      "sample_id": "2xs_3", "size": "2X-Small",
+      "benchmark_run_id": "5d2738f4-b6c3-41b6-8e5b-49bf8c3424b3",
+      "report_id": "9b40418a-717c-44bf-845b-aae408bf83d0"
+    },
+    {
+      "sample_id": "xs_3", "size": "X-Small",
+      "benchmark_run_id": "4ffd7e5d-2c26-4abe-abe1-16a46aeb4cdc",
+      "report_id": "979942a3-c4dd-4d57-90ad-ef966950c395"
+    }
+  ],
+  "summary": [
+    {
+      "size": "2X-Small", "query": "01_monthly_fares",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 663.8099999981932,
+      "median_engine_total_ms": 521, "median_engine_execution_ms": 348,
+      "median_read_bytes": 67903788, "median_read_files": 3, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "2X-Small", "query": "02_weekly_zone_demand",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 636.4149580185767,
+      "median_engine_total_ms": 503, "median_engine_execution_ms": 303,
+      "median_read_bytes": 19154764, "median_read_files": 1, "median_pruned_files": 2,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "2X-Small", "query": "03_airport_corridors",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 607.396666018758,
+      "median_engine_total_ms": 411, "median_engine_execution_ms": 241,
+      "median_read_bytes": 52348627, "median_read_files": 3, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "2X-Small", "query": "04_gold_demand",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 380.547500011744,
+      "median_engine_total_ms": 242, "median_engine_execution_ms": 116,
+      "median_read_bytes": 1868619, "median_read_files": 1, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "X-Small", "query": "01_monthly_fares",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 613.4758330008481,
+      "median_engine_total_ms": 477, "median_engine_execution_ms": 312,
+      "median_read_bytes": 67903788, "median_read_files": 3, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "X-Small", "query": "02_weekly_zone_demand",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 621.2316250021104,
+      "median_engine_total_ms": 467, "median_engine_execution_ms": 277,
+      "median_read_bytes": 19154764, "median_read_files": 1, "median_pruned_files": 2,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "X-Small", "query": "03_airport_corridors",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 544.2737090052105,
+      "median_engine_total_ms": 415, "median_engine_execution_ms": 247,
+      "median_read_bytes": 52348627, "median_read_files": 3, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    },
+    {
+      "size": "X-Small", "query": "04_gold_demand",
+      "samples": 9, "profile_samples": 9,
+      "median_client_elapsed_ms": 394.61958399624564,
+      "median_engine_total_ms": 226, "median_engine_execution_ms": 106,
+      "median_read_bytes": 1868619, "median_read_files": 1, "median_pruned_files": 0,
+      "median_spill_bytes": 0, "median_remote_read_bytes": 0
+    }
+  ],
+  "output_audit": {
+    "status": "PASSED",
+    "statements": 96,
+    "measured_statements": 72,
+    "warmup_statements": 24,
+    "scope": "All statement result hashes and row counts agree per query across both sizes and all sessions. Every statement has a final query profile without a SQL result-cache hit. Frozen table versions, workload hashes and reported engine versions agree across sessions."
+  },
+  "billing_status": "OBSERVED_RECORDS",
+  "billing_estimate_status": "PROVISIONAL",
+  "billing_collected_at": "2026-11-03T18:33:32.536531+00:00",
+  "billing_summary": [
+    {
+      "size": "2X-Small", "warehouse_id": "919966835b70007d",
+      "usage_records": 2, "dbu_quantity": "1.271660000000000000",
+      "overlapping_records_list_price_compute_estimate_usd": "0.890162"
+    },
+    {
+      "size": "X-Small", "warehouse_id": "25ce0220d15c1e6f",
+      "usage_records": 1, "dbu_quantity": "0.728518333333333333",
+      "overlapping_records_list_price_compute_estimate_usd": "0.509963"
+    }
+  ],
+  "billing_buckets": [
+    {
+      "size": "2X-Small",
+      "record_id": "JkuKYgVOsxNMaJ5J4MvypD0A",
+      "record_type": "ORIGINAL",
+      "usage_start_time": "2026-11-03T01:00:00+00:00",
+      "usage_end_time": "2026-11-03T02:00:00+00:00",
+      "dbu_quantity": "0.802337777777777778",
+      "list_price_compute_estimate_usd": "0.561636",
+      "query_window_samples": ["2xs_1"],
+      "scope": "Also includes earlier Gold billing collection on this warehouse; not isolated SQL experiment cost."
+    },
+    {
+      "size": "2X-Small",
+      "record_id": "Jku2ienFaplPXajHtLtFDoLy",
+      "record_type": "ORIGINAL",
+      "usage_start_time": "2026-11-03T02:00:00+00:00",
+      "usage_end_time": "2026-11-03T03:00:00+00:00",
+      "dbu_quantity": "0.469322222222222222",
+      "list_price_compute_estimate_usd": "0.328526",
+      "query_window_samples": ["2xs_2", "2xs_3"]
+    },
+    {
+      "size": "X-Small",
+      "record_id": "JkuRAEUPkhNBxpS0hUVFdTs6",
+      "record_type": "ORIGINAL",
+      "usage_start_time": "2026-11-03T02:00:00+00:00",
+      "usage_end_time": "2026-11-03T03:00:00+00:00",
+      "dbu_quantity": "0.728518333333333333",
+      "list_price_compute_estimate_usd": "0.509963",
+      "query_window_samples": ["xs_1", "xs_2", "xs_3"]
+    }
+  ],
+  "billing_scope": "Initial session collectors reported pending. November 3 refresh found priced hourly usage records overlapping every session. Signed DBU usage priced at effective USD list prices; each record counted once per size, not once per overlapping session. Query-window unions and recorded-session-window unions select the same hourly records. Totals include startup, idle, metadata and shutdown activity; the first 2X-Small hour also includes earlier Gold billing checks. These are provisional overlapping-record totals, not isolated experiment costs, per-query costs, or comparable equal-duration cost boundaries. Do not infer percentage savings. Preparation/later collection are outside query bounds, but coarse records may include adjacent activity. Estimates exclude invoice discounts, credits, taxes and storage; later corrections remain possible.",
+  "interpretation": "Client medians were lower on X-Small for three queries and slightly higher for Gold demand; engine medians do not show a uniform gain. Both sizes had identical median scan/pruning metrics and zero median spill. Small warm-cache, serial workloads do not establish a significant or general sizing improvement, cold-cache behavior, concurrency capacity or a cost saving. Retain the original 2X-Small configuration pending additional evidence.",
+  "original_warehouse_configuration_changed": false,
+  "final_warehouse_states": {"2X-Small": "STOPPED", "X-Small": "STOPPED"}
+}

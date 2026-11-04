@@ -49,32 +49,38 @@
     {
       "sample_id": "full_1", "strategy": "full", "job_run_id": "859792248740436",
       "gold_operation_seconds": 18.030489840999962, "job_duration_seconds": 67.6,
-      "data_bytes_added": 1915917, "active_files": 4
+      "data_bytes_added": 1915917, "active_files": 4,
+      "job_list_price_compute_estimate_usd": 0.134340
     },
     {
       "sample_id": "incremental_1", "strategy": "incremental", "job_run_id": "24033449925514",
       "gold_operation_seconds": 32.666953021000154, "job_duration_seconds": 85.685,
-      "data_bytes_added": 701223, "active_files": 10
+      "data_bytes_added": 701223, "active_files": 10,
+      "job_list_price_compute_estimate_usd": 0.181455
     },
     {
       "sample_id": "incremental_2", "strategy": "incremental", "job_run_id": "114271476042011",
       "gold_operation_seconds": 33.622320973000114, "job_duration_seconds": 86.673,
-      "data_bytes_added": 701160, "active_files": 10
+      "data_bytes_added": 701160, "active_files": 10,
+      "job_list_price_compute_estimate_usd": 0.173948
     },
     {
       "sample_id": "full_2", "strategy": "full", "job_run_id": "396200783453174",
       "gold_operation_seconds": 11.233012173000134, "job_duration_seconds": 46.186,
-      "data_bytes_added": 1915921, "active_files": 4
+      "data_bytes_added": 1915921, "active_files": 4,
+      "job_list_price_compute_estimate_usd": 0.114243
     },
     {
       "sample_id": "full_3", "strategy": "full", "job_run_id": "920120895376649",
       "gold_operation_seconds": 11.303988724999954, "job_duration_seconds": 44.107,
-      "data_bytes_added": 1915917, "active_files": 4
+      "data_bytes_added": 1915917, "active_files": 4,
+      "job_list_price_compute_estimate_usd": 0.109621
     },
     {
       "sample_id": "incremental_3", "strategy": "incremental", "job_run_id": "269326382772769",
       "gold_operation_seconds": 21.725034898999866, "job_duration_seconds": 55.477,
-      "data_bytes_added": 679144, "active_files": 10
+      "data_bytes_added": 679144, "active_files": 10,
+      "job_list_price_compute_estimate_usd": 0.143354
     }
   ],
   "summary": [
@@ -88,8 +94,8 @@
       "median_data_files_added": 4,
       "median_active_files": 4,
       "median_active_data_bytes": 1915917,
-      "billing_status": "PENDING",
-      "median_job_list_price_compute_estimate_usd": null
+      "billing_status": "OBSERVED_RECORDS",
+      "median_job_list_price_compute_estimate_usd": 0.114243
     },
     {
       "strategy": "incremental", "samples": 3,
@@ -101,8 +107,8 @@
       "median_data_files_added": 8,
       "median_active_files": 10,
       "median_active_data_bytes": 1913225,
-      "billing_status": "PENDING",
-      "median_job_list_price_compute_estimate_usd": null
+      "billing_status": "OBSERVED_RECORDS",
+      "median_job_list_price_compute_estimate_usd": 0.173948
     }
   ],
   "output_audit": {
@@ -113,9 +119,9 @@
   },
   "observed_incremental_gold_time_ratio": 2.8898607222381396,
   "observed_data_bytes_added_reduction_percent": 63.403425096181095,
-  "billing_collected_at": "2026-11-02T19:26:46.104933+00:00",
-  "billing_scope": "Measured-run usage was pending, not zero. Job cost includes startup and metadata reporting, not solely the Gold timer. Preparation, auditing, subsequent metrics collection and storage are excluded from the measured-run comparison.",
+  "billing_collected_at": "2026-11-03T01:20:12.252122+00:00",
+  "billing_scope": "All six measured runs have observed signed DBU usage priced at effective USD list prices. Estimates are not invoices and exclude discounts, credits and taxes. Job cost includes startup and metadata reporting, not solely the Gold timer. Preparation, auditing, subsequent metrics collection and storage are excluded from the measured-run comparison. Billing refreshed without rerunning workloads; later corrections remain possible.",
   "write_metrics_scope": "Complete post-run Delta history from seed version through each recorded measured version, including automatic compaction. Data-file bytes exclude transaction logs, deletion-vector sidecars, source reads and storage transactions. Enrichment did not rerun workloads; original source hashes are retained and collector hashes are in the full report.",
-  "interpretation": "Affected-key recomputation and MERGE wrote approximately 63.4% fewer data-file bytes but took 2.89 times as long for Gold processing and left more active files. Keep full Gold rebuilds at this measured scale; this is not evidence that incremental processing is always slower. This append-only experiment does not validate corrections/deletions or a future production rollout.",
+  "interpretation": "Affected-key recomputation and MERGE wrote approximately 63.4% fewer data-file bytes but took 2.89 times as long for Gold processing, had approximately 52.3% higher median job compute cost and left more active files. Keep full Gold rebuilds at this measured scale; this is not evidence that incremental processing is always slower. This append-only experiment does not validate corrections/deletions or a future production rollout.",
   "production_changed": false
 }

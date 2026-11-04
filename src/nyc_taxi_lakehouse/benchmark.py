@@ -118,6 +118,12 @@ def delta_write_metrics(history: list[dict], after_version: int, through_version
     if [row["version"] for row in records] != list(range(after_version + 1, through_version + 1)):
         raise ValueError("Delta write history is incomplete for the measured version interval.")
     fields = {
+        "CREATE TABLE AS SELECT": (
+            "numOutputBytes",
+            "numRemovedBytes",
+            "numFiles",
+            "numRemovedFiles",
+        ),
         "CREATE OR REPLACE TABLE AS SELECT": (
             "numOutputBytes",
             "numRemovedBytes",
@@ -323,8 +329,15 @@ def billing_report(cursor, catalog: str, job_id: str, warehouse_id: str, window:
 
 
 def stop_warehouse(client, warehouse_id: str):
-    for _ in range(3):
-        client.warehouses.stop(warehouse_id).result(timeout=timedelta(minutes=5))
+    for attempt in range(3):
+        try:
+            client.warehouses.stop(warehouse_id).result(timeout=timedelta(minutes=5))
+        except TimeoutError:
+            LOGGER.warning(
+                "Warehouse %s stop request timed out on attempt %s; checking state.",
+                warehouse_id,
+                attempt + 1,
+            )
         time.sleep(2)
         if client.warehouses.get(warehouse_id).state.value == "STOPPED":
             return

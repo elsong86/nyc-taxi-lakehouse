@@ -182,3 +182,27 @@ def test_shutdown_verifies_compute_stays_stopped(monkeypatch, states):
         with pytest.raises(RuntimeError, match="did not remain stopped"):
             stop_warehouse(client, "owned-warehouse")
     assert requests == ["owned-warehouse"] * len(states)
+
+
+def test_shutdown_retries_timeout_and_checks_actual_state(monkeypatch, caplog):
+    requests = []
+    states = iter(("STOPPING", "STOPPED"))
+
+    def stop(warehouse_id):
+        requests.append(warehouse_id)
+
+        def wait(**kwargs):
+            raise TimeoutError("Warehouse is still stopping.")
+
+        return SimpleNamespace(result=wait)
+
+    client = SimpleNamespace(
+        warehouses=SimpleNamespace(
+            stop=stop,
+            get=lambda warehouse_id: SimpleNamespace(state=SimpleNamespace(value=next(states))),
+        )
+    )
+    monkeypatch.setattr("nyc_taxi_lakehouse.benchmark.time.sleep", lambda seconds: None)
+    stop_warehouse(client, "owned-warehouse")
+    assert requests == ["owned-warehouse", "owned-warehouse"]
+    assert "stop request timed out" in caplog.text

@@ -1,6 +1,6 @@
 # Benchmark results and experiment log
 
-Results recorded through **November 2, 2026**. All money amounts are USD
+Results recorded through **November 4, 2026**. All money amounts are USD
 list-price estimates, not invoices or total project spending.
 
 ## At a glance
@@ -10,7 +10,10 @@ list-price estimates, not invoices or total project spending.
 | Original Q1 pipeline | One observed successful run | 707.270 s total job duration; $0.145978 attributed compute estimate |
 | Frozen Q1 query baseline | Four queries, three measured repetitions each | Repeatable results with SQL result caching disabled |
 | Standard vs Performance Optimized | Three pipeline replays per mode; all output audits passed | Median job duration 558.317 s vs 233.703 s; estimated compute $0.139400 vs $0.330759 |
-| Full vs incremental Gold | Three March updates per strategy; all output audits passed | Median Gold time 11.304 s vs 32.667 s; incremental wrote 63.4% fewer data-file bytes |
+| Full vs incremental Gold | Three March updates per strategy; all output audits passed | Median Gold time 11.304 s vs 32.667 s; estimated job compute $0.114243 vs $0.173948; incremental wrote 63.4% fewer data-file bytes |
+| SQL warehouse 2X-Small vs X-Small | Three sessions per size, nine measured repetitions per query; all results matched | Modest, mixed latency differences; billing observed, but hourly records and uneven shutdowns prevent clean cost attribution |
+| Isolated SQL sizing rerun | Six fresh warehouses, ten-minute windows; 8,504 measured queries | Median throughput 141.815 vs 139.064 queries/min; full-sample billing pending |
+| Partitioned vs liquid-configured Q1 copies | Exact row audits and 96 query profiles passed | Clustering skipped on write; `OPTIMIZE FULL` planned zero physical clustering tasks; weekly scans unchanged |
 
 **Current finding:** Performance Optimized had **58.14% lower median total job
 duration**, but only **5.44% lower median pipeline-call duration**. Most of the
@@ -18,7 +21,7 @@ observed difference was outside pipeline execution. Its observed median compute
 estimate was **2.37 times** Standard's, not 58% cheaper.
 
 For Gold, the incremental implementation reduced data-file writes but was
-**2.89 times slower** at this scale. Production remains on Standard compute
+**2.89 times slower**, with **52.3% higher median job compute cost**, at this scale. Production remains on Standard compute
 and full Gold rebuilds.
 
 ## 1. Shared Q1 dataset and storage
@@ -317,7 +320,7 @@ cleared. There were three measured repetitions per strategy.
 | Median data files added | 4 | 8 |
 | Median active files after update | 4 | 10 |
 | Median active data bytes after update | 1,915,917 | 1,913,225 |
-| Median job compute estimate | **PENDING** | **PENDING** |
+| Median job compute estimate | **$0.114243** | **$0.173948** |
 
 Gold time covers planning and the four aggregate writes. Whole-job time also
 includes startup, version checks, and metadata reporting. Attributed job cost
@@ -349,17 +352,361 @@ The experiment is append-only; upstream corrections, removed groups, and
 deletions are not validated production behavior. No production Gold switch
 was deployed.
 
-New Gold-run billing was still **PENDING** at **11:26 AM PST on November 2**
-(`2026-11-02T19:26:46Z`). Pending is not zero. If costs are normalized per
-million rows, the denominator here is the **3,581,500 newly available valid
-March Silver rows**, not original Parquet input rows.
+Gold-run billing was initially **PENDING** at **11:26 AM PST on November 2**.
+A refresh at **5:20 PM PST on November 2**
+(`2026-11-03T01:20:12Z`) found priced records for all six runs, without rerunning
+workloads.
+
+| Sample | Observed list-price job compute estimate |
+|---|---:|
+| Full 1 | $0.134340 |
+| Full 2 | $0.114243 |
+| Full 3 | $0.109621 |
+| Incremental 1 | $0.181455 |
+| Incremental 2 | $0.173948 |
+| Incremental 3 | $0.143354 |
+
+Incremental's median job compute estimate was **52.3% higher** than full's.
+Estimates use signed DBU usage and effective USD list prices; later billing
+corrections remain possible. They exclude invoice discounts, credits, taxes,
+storage, preparation, auditing and subsequent metrics collection. If costs are
+normalized per million rows, the denominator here is the **3,581,500 newly
+available valid March Silver rows**, not original Parquet input rows.
 
 The measured source hashes and a source-identical wheel are archived in the
 experiment's managed report directory. Post-run history enrichment preserved
 the original measurement hashes and recorded separate collector hashes;
 workloads were not rerun to collect the extra write metrics.
 
-## 7. Detailed evidence
+## 7. SQL warehouse sizing: 2X-Small vs X-Small
+
+Measured **November 2, 2026, America/Los_Angeles** (November 3 UTC).
+Experiment: `sql_sizes_20261102_a`. Evidence:
+[sql_warehouse_sizes_q1_2024.json](sql_warehouse_sizes_q1_2024.json).
+
+These are **new measurements of both sizes**, not a comparison against the
+October 28 query baseline. The frozen Q1 tables and all four SQL templates were
+unchanged. The existing `919966835b70007d` warehouse remained 2X-Small. A separate
+X-Small warehouse, `25ce0220d15c1e6f`, isolated billing attribution by size.
+Both were serverless PRO, Photon-enabled, CURRENT channel, single-cluster
+(min/max one), five-minute auto-stop, and reported DBSQL version **2026.43**.
+
+There were three sessions per size, each with one warmup and three measured
+repetitions per query: **96 statements total, 72 measured and 24 warmups**.
+Results below pool the nine measured repetitions per query per size, excluding
+all warmups. Session order was 2X-Small 1, X-Small 1, X-Small 2, 2X-Small 2,
+2X-Small 3, X-Small 3. Queries ran serially in a persistent session per run.
+SQL result caching was disabled and verified; physical I/O caches were not
+cleared. This is not a cold-cache or concurrency benchmark.
+
+### Latency and query profiles
+
+| Query | 2X-Small client median (ms) | X-Small client median (ms) | 2X-Small engine total (ms) | X-Small engine total (ms) |
+|---|---:|---:|---:|---:|
+| Monthly fares | 663.810 | 613.476 | 521 | 477 |
+| Weekly zone demand | 636.415 | 621.232 | 503 | 467 |
+| Airport corridors | 607.397 | 544.274 | 411 | 415 |
+| Gold demand | 380.548 | 394.620 | 242 | 226 |
+
+Engine execution excludes some planning/compilation and other engine overhead.
+Client time additionally includes connector/network work and fetching results;
+client and engine medians need not move together.
+
+| Query | 2X-Small execution (ms) | X-Small execution (ms) | Median read bytes, both sizes | Read/pruned files, both sizes |
+|---|---:|---:|---:|---|
+| Monthly fares | 348 | 312 | 67,903,788 | 3/0 |
+| Weekly zone demand | 303 | 277 | 19,154,764 | 1/2 |
+| Airport corridors | 241 | 247 | 52,348,627 | 3/0 |
+| Gold demand | 116 | 106 | 1,868,619 | 1/0 |
+
+Both sizes had **zero median spill bytes and zero median remote-read bytes**
+for every query. All **96 statements** had final profiles and consistent
+result hashes/row counts per query across sizes. Frozen table versions and
+workload/engine versions remained identical.
+
+### Findings, costs and cleanup
+
+X-Small's client medians were lower for three queries and slightly higher for
+Gold demand. Engine medians did not improve uniformly. These small, warm-cache
+queries scan at most about 68 MB; extra compute did not produce a compelling,
+consistent latency benefit. This is not a statistically significant speedup
+claim, a p95 estimate, or evidence about higher query concurrency.
+
+**Decision: keep the original 2X-Small warehouse configuration.** All six
+session billing collectors initially reported warehouse costs **PENDING**.
+A refresh at **10:33 AM PST on November 3**
+(`2026-11-03T18:33:32Z`) found priced records overlapping all sessions:
+
+| Warehouse size | Distinct overlapping hourly records | Signed DBUs | Overlapping-record list-price estimate |
+|---|---:|---:|---:|
+| 2X-Small | 2 | 1.271660 | $0.890162 |
+| X-Small | 1 | 0.7285183333 | $0.509963 |
+
+**These are not isolated experiment costs or a fair cost comparison.** Billing
+records cover whole hours, including startup, idle, metadata and shutdown work.
+The first 2X-Small hour also includes the earlier Gold billing checks on that
+warehouse. Restricting to the next hour would still compare two 2X-Small
+sessions with three X-Small sessions, with unequal shutdown overhead.
+
+Each signed billing record was counted **once per size**, even when it
+overlapped multiple sessions. Both query-only window unions and the broader
+recorded session-window unions select the same hourly records; shorter query
+bounds do not isolate query costs. The raw records, record IDs, effective prices,
+window memberships and attribution caveats are preserved in the full report.
+Estimates are provisional, exclude invoice discounts, credits, taxes and
+storage, and may receive later corrections. **No per-query cost or percentage
+saving is claimed.** The refresh did not rerun workloads, and both warehouses
+were again verified stopped.
+
+The first session completed its queries but its shutdown timed out. Its
+original report retains `WAREHOUSE_STOP_FAILED`, and its recorded window ends
+at query completion rather than verified shutdown. The controller recovered
+those measurements without rerunning queries and verified shutdown separately.
+The shutdown helper was then fixed to check actual state and retry timed-out
+stop requests; only cleanup changed, not query measurement logic. Some later
+shutdowns also needed retries, so session window durations are not a fair
+measure of SQL performance or directly comparable all-in cost boundaries.
+Original source manifests are preserved in every report.
+
+Both warehouses were verified **STOPPED** at completion. The comparison
+warehouse remains available, stopped, for future experiments. Production
+jobs, the original warehouse configuration, and frozen tables were unchanged.
+The benchmark tests passed **16 tests**, including the shutdown-timeout retry
+case; Ruff lint/format and Git whitespace checks passed.
+
+## 8. Isolated SQL warehouse sizing and whole-sample costs
+
+Successful samples measured **November 4, 2026**, following an interrupted
+November 3 attempt. The experiment ID retains the original request date:
+`sql_clean_20261103_b`. Evidence:
+[sql_warehouse_clean_q1_2024.json](sql_warehouse_clean_q1_2024.json).
+
+Every sample used a **fresh warehouse ID**, exclusively for that sample's
+startup, metadata checks, warmups, query window and shutdown. No billing queries
+or unrelated workloads ran on these warehouses. Both sizes used serverless PRO,
+Photon, CURRENT channel, min/max one cluster and five-minute auto-stop. All
+samples reported **DBSQL 2026.44** and used the same immutable Q1 tables and SQL.
+The existing warehouses and production jobs were not reconfigured.
+
+Each sample warmed up the four queries once, then repeated balanced four-query
+cycles for a nominal **600 seconds**. A final cycle finished if it crossed the
+deadline; actual windows were **600.510-601.430 seconds**. SQL result caching
+was disabled and verified. Physical I/O caches were not controlled. Work was
+serial, locally orchestrated through the SQL connector, not concurrent.
+
+### Sample measurements
+
+| Sample | Size | Measured queries | Actual query window (s) | Queries/min | Shutdown (s) |
+|---|---|---:|---:|---:|---:|
+| 2xs_1 | 2X-Small | 1,516 | 601.137 | 151.313 | 2.386 |
+| xs_1 | X-Small | 1,392 | 600.585 | 139.064 | 3.989 |
+| xs_2 | X-Small | 1,440 | 600.510 | 143.878 | 3.539 |
+| 2xs_2 | 2X-Small | 1,400 | 601.430 | 139.667 | 2.397 |
+| 2xs_3 | 2X-Small | 1,420 | 600.784 | 141.815 | 2.368 |
+| xs_3 | X-Small | 1,336 | 601.073 | 133.362 | 3.890 |
+
+There were **8,504 measured queries plus 24 warmups**. All **8,528 workload
+statements** returned matching result hashes/counts per query and had final
+profiles without result-cache hits. Frozen versions were checked before and
+after each sample. Median spill was zero for both sizes across all four queries.
+
+### Comparison
+
+Figures are **medians of the three per-sample medians**, not pooled queries:
+
+| Query | 2X-Small client (ms) | X-Small client (ms) | 2X-Small engine total (ms) | X-Small engine total (ms) |
+|---|---:|---:|---:|---:|
+| Monthly fares | 499.547 | 499.678 | 356 | 336 |
+| Weekly zone demand | 423.085 | 440.203 | 307 | 317 |
+| Airport corridors | 406.980 | 410.094 | 258 | 270.5 |
+| Gold demand | 309.298 | 310.142 | 170 | 176 |
+
+| Metric | 2X-Small | X-Small |
+|---|---:|---:|
+| Median measured queries/min | 141.815 | 139.064 |
+| Median full lifecycle duration | 638.586 s | 637.969 s |
+| Median whole-sample list-price estimate | **PENDING** | **PENDING** |
+| Median amortized full-sample cost per measured query | **PENDING** | **PENDING** |
+
+Larger compute did not provide a consistent latency or throughput benefit.
+These are small, warm-cache scans with only three independent windows per size;
+do not claim statistical significance or generalize to high concurrency.
+Do not compare timings directly against section 7: the repetition pattern and
+engine version changed. Throughput includes local orchestration, result hashing
+and checkpoint overhead; client timings include connector/network/fetch time.
+
+### Clean billing boundaries and pending usage
+
+Billing is collected **afterward on the separate existing 2X-Small warehouse**.
+Each fresh sample's entire signed DBU usage is selected by its warehouse ID,
+including corrections, and priced at effective USD list prices. Because no
+other activity uses that ID, hourly records need not be prorated or allocated
+between runs. All startup, metadata, warmup and shutdown charges belong to the
+sample; collector charges do not.
+
+The first refresh, completed **11:27 AM PST on November 4**
+(`2026-11-04T19:27:25Z`), found **no usage records for any sample**. Pending is
+not zero. Once available, full-sample cost divided by completed measured queries
+will be reported as **amortized operating cost/query**, not an execution-only
+bill. List-price estimates exclude discounts, credits, taxes and storage and
+can receive later corrections. Production remains unchanged pending evidence.
+
+### Failed attempt, reproducibility and cleanup
+
+The earlier `sql_clean_20261103_a` attempt failed after **608 recorded
+statements** during a prolonged connector/network stall. Its partial report
+and errors were preserved, and its warehouse was stopped. It is excluded from
+successful-sample comparisons; its uncollected cost is **not zero** or included
+in the six successful samples' cost denominator.
+
+The restarted experiment used six new warehouse IDs, 30-second socket timeouts,
+one request attempt and a wall-clock overrun guard. A scoped macOS idle-sleep
+inhibitor was used only while the bounded controller ran. Successful shutdowns
+took **2.368-3.989 seconds**; no failed sample was silently resumed or reused.
+All six sample warehouses, the failed-attempt warehouse and the billing
+collector were verified stopped and unused. The sample warehouses remain
+stopped to preserve their identities for subsequent billing collection.
+
+The exact measured Python sources and SQL templates were archived and their
+hashes verified. The full local suite passed **65 tests** with nine existing
+PySpark datetime warnings; Ruff lint/format and Git whitespace checks passed.
+
+Measurement command (reusing this completed report does not rerun samples):
+
+```bash
+.venv/bin/python -m nyc_taxi_lakehouse.warehouse_experiment \
+  --phase measure --experiment-id sql_clean_20261103_b \
+  --duration-seconds 600 --auth-type azure-cli
+```
+
+Refresh billing without rerunning queries:
+
+```bash
+.venv/bin/python -m nyc_taxi_lakehouse.warehouse_experiment \
+  --phase billing --experiment-id sql_clean_20261103_b --auth-type azure-cli
+```
+
+Commands require the existing workspace host/profile and Azure CLI identity.
+Reports are persisted locally and in the managed volume; source/configuration
+guards reject incomparable resumption, and partial failed samples are not
+automatically rerun.
+
+## 9. Partitioning vs liquid clustering: configuration/no-op observation
+
+Measured **November 4, 2026**. Experiment: `layout_20261104_a`. Evidence:
+[layout_q1_2024.json](layout_q1_2024.json).
+
+**Important limitation: Databricks did not physically recluster this data.**
+The liquid keys were registered, but CTAS reported
+`Reason for skipping: Estimated ingestion size is not within the expected range`.
+The returned `OPTIMIZE FULL` metrics showed **zero clustering tasks planned,
+zero files added/removed and zero bytes rewritten**. This measures the platform's
+configuration and no-op behavior on these inputs, not the performance of a fully
+reorganized liquid-clustered table.
+
+### Inputs, settings and observed file layouts
+
+Both copies were created from **version 0 of the frozen Q1 Silver table**,
+with **9,551,977 rows** each. The original frozen table remains unchanged at
+**512,970,251 active bytes in three files**. New copies are fresh materializations,
+not exact clones of the original file layout.
+
+Both used ZSTD compression and the same **64 MiB best-effort `delta.targetFileSize`**
+property. The smaller target was an experiment setting to expose potential
+skipping granularity in this roughly 513 MB table, not a production recommendation.
+It does not force splitting already large files. Catalog predictive optimization
+remained disabled.
+
+| Setting/metric | Month-partitioned copy | Liquid-configured copy |
+|---|---|---|
+| Partition columns | `source_month` | None |
+| Clustering keys | None | `source_month`, `pickup_at` |
+| Active files | 6 | 5 |
+| Active data bytes | 512,979,991 | 512,812,875 |
+| CTAS time, one observation | 15.027 s | 9.746 s |
+| Requested optimization | `OPTIMIZE` | `OPTIMIZE FULL` |
+| Optimization time, one observation | 3.041 s | 13.926 s |
+| Physical optimization writes | 0 files, 0 bytes | 0 files, 0 bytes |
+
+Liquid CTAS creates a different file arrangement, but neither subsequent
+optimization rewrote files. Liquid optimization performed metadata/classification
+work; a longer timer is **not** evidence of physical reclustering cost.
+Source month and pickup timestamp were chosen to match the weekly query's
+predicates. Boolean `airport_trip` is not a supported clustering-key type, so
+the airport/full-scan queries are not expected to gain selective skipping from
+these keys. The unchanged Gold table is a control.
+
+### Query measurements and correctness
+
+All queries used the **same 2X-Small serverless PRO warehouse**, Photon enabled,
+one cluster, and DBSQL **2026.44**. There were three interleaved blocks per layout,
+each with one warmup and three measured repetitions per query:
+**96 workload statements, 72 measured and 24 warmups**.
+SQL result caching was disabled and verified; physical I/O caches were not cleared.
+
+| Query | Partitioned client median (ms) | Liquid-configured client median (ms) | Partitioned read bytes | Liquid-configured read bytes |
+|---|---:|---:|---:|---:|
+| Monthly fares | 513.433 | 563.330 | 67,903,788 | 67,447,081 |
+| Weekly zone demand | 519.055 | 515.828 | 19,154,764 | 19,155,560 |
+| Airport corridors | 412.784 | 511.510 | 51,896,665 | 51,825,888 |
+| Gold demand, unchanged control | 360.417 | 314.095 | 1,868,619 | 1,868,619 |
+
+The weekly query read **two files in both copies**, pruning four of six
+partitioned files versus three of five liquid-configured files. The actual bytes
+read were essentially identical. Read-file fractions alone would be misleading.
+All query medians had zero disk spill.
+
+Both copies passed exact, bidirectional **`EXCEPT ALL` row-multiset audits**
+across all visible columns, preserving duplicate multiplicity. All 96 statements
+returned consistent hashes/counts per query and had final profiles without result
+cache hits. Frozen and alternative table versions were unchanged during queries.
+
+The unchanged Gold control also had a noticeable client-time difference.
+Do not attribute observed client latency differences to liquid clustering or
+claim statistical significance from these small, warm-cache samples.
+
+### Preparation costs, accounting and decision
+
+Each layout's CTAS and optimization ran on a **fresh, dedicated 2X-Small
+warehouse**. Exact row audits and query comparisons ran on the separate existing
+warehouse. Whole preparation-warehouse costs will therefore be attributable by
+warehouse ID, including startup, metadata and shutdown, but are not stage-level
+or steady-state recurring-maintenance costs.
+
+Both preparation costs were **PENDING** at **1:20 PM PST on November 4**
+(`2026-11-04T21:20:24Z`). Missing is not zero. Billing collection did not rerun
+writes or workload queries.
+
+Delta history reported CTAS output bytes but omitted write counters for the
+metadata-only liquid `OPTIMIZE` commits. Original history accounting remains
+`INCOMPLETE` with null fields. Explicit returned OPTIMIZE metrics independently
+confirm zero added/removed files and bytes; post-run enrichment parsed those
+saved results without changing the measured source hashes or rerunning workloads.
+
+**Decision: retain production month partitioning.** No measurable scan benefit
+was demonstrated, and physical liquid clustering was not exercised. A meaningful
+physical-clustering comparison needs inputs/layout for which the platform actually
+schedules file rewrites; this is not a general verdict against liquid clustering.
+No data was duplicated artificially or undocumented threshold settings forced
+to manufacture an optimization benefit.
+
+The exact measured source files and SQL templates are archived with verified hashes.
+The preparation warehouses and query/billing collector were verified stopped.
+Production and frozen baseline tables were untouched. The full suite passed
+**69 tests**, with nine existing PySpark warnings; Ruff and whitespace checks passed.
+
+Refresh preparation billing without rerunning writes or queries:
+
+```bash
+.venv/bin/python -m nyc_taxi_lakehouse.layout_experiment \
+  --phase billing --experiment-id layout_20261104_a
+```
+
+The CLI uses the existing workspace host/profile and Azure CLI identity.
+The measurement phase rejects an existing report or occupied target names
+instead of overwriting benchmark tables.
+
+## 10. Detailed evidence
 
 The JSON files beside this document contain exact values, source hashes,
 configuration, and run identifiers; displayed tables above round timings.
@@ -383,6 +730,29 @@ Full Gold comparison report:
 
 ```text
 /Volumes/nyc_taxi_dev/benchmark/reports/gold_experiments/gold_20261102_a/experiment_report.json
+```
+
+Full SQL warehouse sizing controller, containing all six session reports,
+statement IDs, profiles, source manifests and original billing collections:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/sql_sizes_20261102_a_controller.json
+```
+
+Full isolated SQL sizing report and exact measured source archive:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/warehouse_experiments/sql_clean_20261103_b/experiment_report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/warehouse_experiments/sql_clean_20261103_b/measured_sources/manifest.json
+```
+
+Full layout configuration/no-op report, exact measured source archive, and
+separate post-run accounting collector:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/experiment_report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/measured_sources/manifest.json
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/post_run_collectors/layout_experiment.py
 ```
 
 The performance experiment directory also contains its pinned input manifest,

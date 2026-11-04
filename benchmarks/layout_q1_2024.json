@@ -1,0 +1,135 @@
+{
+  "experiment_id": "layout_20261104_a",
+  "status": "MEASURED_AND_VERIFIED",
+  "physical_clustering_status": "NOT_APPLIED",
+  "measured_on": "2026-11-04",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/experiment_report.json",
+  "source_archive": "/Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/measured_sources/manifest.json",
+  "measurement_code_sha256": {
+    "layout_experiment.py": "195f9691c2ae9870ecbfe97ecfeabca9e1844f331101c9464df1edc67cebe5fe",
+    "benchmark.py": "dc017a0aa65b217218cdc96f7e13c53502520c85f894bac16259b4009718acb4"
+  },
+  "dataset": {
+    "baseline_reference": "baseline_q1_2024.json",
+    "source_table": "nyc_taxi_dev.benchmark.q1_2024_trips",
+    "source_version": 0,
+    "rows_per_copy": 9551977,
+    "frozen_source_files": 3,
+    "frozen_source_active_bytes": 512970251,
+    "scope": "Two newly materialized copies of the same source version, not exact file-layout clones. All visible columns and duplicate multiplicity preserved and audited."
+  },
+  "configuration": {
+    "query_warehouse_id": "919966835b70007d",
+    "cluster_size": "2X-Small",
+    "warehouse_type": "PRO",
+    "enable_photon": true,
+    "enable_serverless_compute": true,
+    "min_num_clusters": 1,
+    "max_num_clusters": 1,
+    "dbsql_version": "2026.44",
+    "target_file_size_bytes": 67108864,
+    "compression": "zstd",
+    "liquid_keys": ["source_month", "pickup_at"],
+    "predictive_optimization": "DISABLED",
+    "order": ["partitioned_1", "liquid_1", "liquid_2", "partitioned_2", "partitioned_3", "liquid_3"],
+    "measured_repetitions_per_query_per_layout": 9,
+    "scope": "Same common properties on both copies; target size is best-effort, not forced splitting. Separate fresh warehouses for CTAS/OPTIMIZE; exact audits and query measurements use another fixed warehouse. One warmup plus three measured repetitions per query in each of three interleaved blocks per layout. SQL result caching disabled, physical caches uncontrolled. The Gold query reads the same unchanged table as a control."
+  },
+  "layouts": [
+    {
+      "layout": "partitioned",
+      "table": "nyc_taxi_dev.benchmark.layout_20261104_a_partitioned_trips",
+      "preparation_warehouse_id": "da49465164de4bae",
+      "version": 0,
+      "partition_columns": ["source_month"],
+      "clustering_columns": [],
+      "active_data_bytes": 512979991,
+      "active_files": 6,
+      "materialize_seconds": 15.027240249997703,
+      "optimize_seconds": 3.041278250020696,
+      "ctas_data_bytes_written": 512979991,
+      "optimize_data_bytes_written": 0,
+      "optimize_data_files_added": 0,
+      "optimize_data_files_removed": 0,
+      "physical_optimize_rewrite": false,
+      "billing_status": "PENDING"
+    },
+    {
+      "layout": "liquid",
+      "table": "nyc_taxi_dev.benchmark.layout_20261104_a_liquid_trips",
+      "preparation_warehouse_id": "ee99da42fd05dd89",
+      "version": 2,
+      "partition_columns": [],
+      "clustering_columns": ["source_month", "pickup_at"],
+      "active_data_bytes": 512812875,
+      "active_files": 5,
+      "materialize_seconds": 9.746126167010516,
+      "optimize_seconds": 13.925505207997048,
+      "ctas_data_bytes_written": 512812875,
+      "optimize_data_bytes_written": 0,
+      "optimize_data_files_added": 0,
+      "optimize_data_files_removed": 0,
+      "physical_optimize_rewrite": false,
+      "clustering_tasks_planned": 0,
+      "clustering_on_write_status": "Reason for skipping: Estimated ingestion size is not within the expected range",
+      "billing_status": "PENDING"
+    }
+  ],
+  "queries": [
+    {
+      "query": "01_monthly_fares",
+      "partitioned_client_median_ms": 513.4326659899671,
+      "liquid_client_median_ms": 563.330291013699,
+      "partitioned_engine_total_ms": 382,
+      "liquid_engine_total_ms": 390,
+      "partitioned_read_bytes": 67903788,
+      "liquid_read_bytes": 67447081,
+      "partitioned_read_files": 6, "partitioned_pruned_files": 0,
+      "liquid_read_files": 5, "liquid_pruned_files": 0
+    },
+    {
+      "query": "02_weekly_zone_demand",
+      "partitioned_client_median_ms": 519.0546250087209,
+      "liquid_client_median_ms": 515.8280000032391,
+      "partitioned_engine_total_ms": 371,
+      "liquid_engine_total_ms": 356,
+      "partitioned_read_bytes": 19154764,
+      "liquid_read_bytes": 19155560,
+      "partitioned_read_files": 2, "partitioned_pruned_files": 4,
+      "liquid_read_files": 2, "liquid_pruned_files": 3
+    },
+    {
+      "query": "03_airport_corridors",
+      "partitioned_client_median_ms": 412.7844169852324,
+      "liquid_client_median_ms": 511.5097080124542,
+      "partitioned_engine_total_ms": 307,
+      "liquid_engine_total_ms": 341,
+      "partitioned_read_bytes": 51896665,
+      "liquid_read_bytes": 51825888,
+      "partitioned_read_files": 6, "partitioned_pruned_files": 0,
+      "liquid_read_files": 5, "liquid_pruned_files": 0
+    },
+    {
+      "query": "04_gold_demand",
+      "partitioned_client_median_ms": 360.4174999927636,
+      "liquid_client_median_ms": 314.0947089996189,
+      "partitioned_engine_total_ms": 201,
+      "liquid_engine_total_ms": 196,
+      "partitioned_read_bytes": 1868619,
+      "liquid_read_bytes": 1868619,
+      "partitioned_read_files": 1, "partitioned_pruned_files": 0,
+      "liquid_read_files": 1, "liquid_pruned_files": 0,
+      "scope": "Same unchanged Gold table in both blocks; timing difference is not a layout effect."
+    }
+  ],
+  "audit": {
+    "status": "PASSED",
+    "scope": "Both copies have 9,551,977 rows and zero differences in bidirectional EXCEPT ALL across all visible columns. All 96 workload statements (72 measured, 24 warmups) have matching results per query and final profiles without result-cache hits. Frozen and alternative versions unchanged during measurements. All query medians had zero spill."
+  },
+  "billing_status": "PENDING",
+  "billing_collected_at": "2026-11-04T21:20:24.005959+00:00",
+  "billing_scope": "Whole dedicated CTAS/optimization warehouse usage is selected by warehouse ID, not hourly overlap windows. Includes startup, metadata and shutdown; excludes separate exact audits, query comparison, billing collector and storage. These are single preparation observations, not stage-level costs or recurring maintenance measurements. Missing records are pending, not zero; future signed usage estimates use effective USD list prices and can be corrected.",
+  "write_metrics_scope": "CTAS bytes/files come from committed Delta history. OPTIMIZE zero-write counters come from explicit returned operation metrics. Sparse Delta OPTIMIZE history omits these counters; original history accounting remains INCOMPLETE/null rather than silently replacing missing values with zero. Post-run enrichment parsed saved result rows without rerunning table writes or queries.",
+  "interpretation": "The keys were registered but clustering on write was skipped and OPTIMIZE FULL planned zero physical clustering tasks. Weekly scan volume was essentially identical; client latency also varied for the unchanged Gold control. This is a supported-configuration/no-op observation, not a fully reclustered layout benchmark or evidence that liquid clustering is generally ineffective. Retain production month partitioning. A meaningful physical-clustering comparison requires a dataset/layout on which the platform actually schedules file rewrites.",
+  "production_changed": false
+}
