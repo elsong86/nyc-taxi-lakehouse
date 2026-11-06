@@ -525,8 +525,8 @@ Figures are **medians of the three per-sample medians**, not pooled queries:
 |---|---:|---:|
 | Median measured queries/min | 141.815 | 139.064 |
 | Median full lifecycle duration | 638.586 s | 637.969 s |
-| Median whole-sample list-price estimate | **PENDING** | **PENDING** |
-| Median amortized full-sample cost per measured query | **PENDING** | **PENDING** |
+| Median whole-sample list-price estimate | **$0.491101** | **$0.735544** |
+| Median amortized full-sample cost per measured query | **$0.000345846** | **$0.000528408** |
 
 Larger compute did not provide a consistent latency or throughput benefit.
 These are small, warm-cache scans with only three independent windows per size;
@@ -535,7 +535,7 @@ Do not compare timings directly against section 7: the repetition pattern and
 engine version changed. Throughput includes local orchestration, result hashing
 and checkpoint overhead; client timings include connector/network/fetch time.
 
-### Clean billing boundaries and pending usage
+### Clean billing boundaries and observed provisional costs
 
 Billing is collected **afterward on the separate existing 2X-Small warehouse**.
 Each fresh sample's entire signed DBU usage is selected by its warehouse ID,
@@ -545,19 +545,32 @@ between runs. All startup, metadata, warmup and shutdown charges belong to the
 sample; collector charges do not.
 
 The first refresh, completed **11:27 AM PST on November 4**
-(`2026-11-04T19:27:25Z`), found **no usage records for any sample**. Pending is
-not zero. Once available, full-sample cost divided by completed measured queries
-will be reported as **amortized operating cost/query**, not an execution-only
-bill. List-price estimates exclude discounts, credits, taxes and storage and
-can receive later corrections. Production remains unchanged pending evidence.
+(`2026-11-04T19:27:25Z`), found **no usage records for any sample**.
+The **November 5** refresh (`2026-11-06T00:51:56Z-00:52:13Z`) found priced
+records for **all six samples**, at **$0.70/DBU**. Seven unique records were
+selected; the final X-Small sample spans two hourly buckets, both counted once.
+Evidence: [warehouse_billing_20261105.json](warehouse_billing_20261105.json).
+
+X-Small's median whole-sample estimate was **49.77% higher**, with no consistent
+latency or throughput benefit. Its median amortized cost per measured query was
+**52.79% higher** (about **$0.528 versus $0.346 per 1,000 measured queries**).
+These compare medians of the three per-sample costs/ratios, not pooled statements.
+Full-sample cost divided by completed measured queries is **amortized operating
+cost/query**, not an execution-only bill. Estimates exclude discounts, credits,
+taxes and storage and remain provisional, subject to later corrections.
+
+**Decision: retain the existing 2X-Small baseline.** This validates a configuration
+already in use; it is not newly achieved production savings. The earlier
+confounded sizing experiment in section 7 remains separate.
 
 ### Failed attempt, reproducibility and cleanup
 
 The earlier `sql_clean_20261103_a` attempt failed after **608 recorded
 statements** during a prolonged connector/network stall. Its partial report
 and errors were preserved, and its warehouse was stopped. It is excluded from
-successful-sample comparisons; its uncollected cost is **not zero** or included
-in the six successful samples' cost denominator.
+successful-sample comparisons. Its dedicated warehouse's whole-lifecycle cost
+was later observed at **$0.488872**, provisional and kept separate from the six
+successful samples and their denominators.
 
 The restarted experiment used six new warehouse IDs, 30-second socket timeouts,
 one request attempt and a wall-clock overrun guard. A scoped macOS idle-sleep
@@ -669,13 +682,21 @@ claim statistical significance from these small, warm-cache samples.
 
 Each layout's CTAS and optimization ran on a **fresh, dedicated 2X-Small
 warehouse**. Exact row audits and query comparisons ran on the separate existing
-warehouse. Whole preparation-warehouse costs will therefore be attributable by
+warehouse. Whole preparation-warehouse costs are therefore attributable by
 warehouse ID, including startup, metadata and shutdown, but are not stage-level
 or steady-state recurring-maintenance costs.
 
 Both preparation costs were **PENDING** at **1:20 PM PST on November 4**
-(`2026-11-04T21:20:24Z`). Missing is not zero. Billing collection did not rerun
-writes or workload queries.
+(`2026-11-04T21:20:24Z`). The November 5 refresh observed **$0.030242**
+for partitioned preparation and **$0.269701** for liquid-configured preparation,
+at effective USD list prices; records remain provisional.
+The full recorded lifecycles were **46.838 s versus 354.299 s**. The liquid
+warehouse encountered a stop-request timeout, retained in these costs.
+This large operating-cost difference is **not a physical reclustering or
+recurring-maintenance cost comparison**: OPTIMIZE rewrote zero files in both.
+Billing collection did not rerun writes or workload queries. Raw records and
+collector source hashes are in
+[warehouse_billing_20261105.json](warehouse_billing_20261105.json).
 
 Delta history reported CTAS output bytes but omitted write counters for the
 metadata-only liquid `OPTIMIZE` commits. Original history accounting remains
@@ -705,6 +726,144 @@ Refresh preparation billing without rerunning writes or queries:
 The CLI uses the existing workspace host/profile and Azure CLI identity.
 The measurement phase rejects an existing report or occupied target names
 instead of overwriting benchmark tables.
+
+### Annual preflight: physical clustering on write verified
+
+Experiment `layout_annual_20261104_a` prepared **January-December 2024**
+Silver-only copies, independently of production and Q1. Preparation/audits ran
+**November 4-5, 2026 PST**; read-only physical evidence enrichment completed
+November 5. Exact timestamps and measurements:
+[layout_annual_2024_preflight.json](layout_annual_2024_preflight.json).
+
+All twelve source months were already processed. The experiment pinned live
+Silver **version 21** and manifest **version 66**, reconciled every month's valid
+count with its complete checksummed manifest, and froze **41,156,210 rows** into
+`nyc_taxi_dev.benchmark.fy_2024_trips` at version **0**. This separate annual
+Silver snapshot contains **2,215,779,228 active bytes in twelve files**.
+The source Parquet files total **693,001,713 bytes**. Selection is by source month,
+not pickup date; existing out-of-month timestamps and duplicate multiplicity are
+preserved. This is not a full annual Bronze/Silver/Gold dataset registration.
+
+Both alternatives used fresh dedicated 2X-Small serverless preparation warehouses,
+ZSTD and the same 64 MiB best-effort file target as Q1:
+
+| Metric | Month-partitioned | Liquid, `source_month,pickup_at` |
+|---|---:|---:|
+| Rows | 41,156,210 | 41,156,210 |
+| Active files | 24 | 34 |
+| Active bytes | 2,215,818,314 | 2,217,253,050 |
+| CTAS, one observation | 42.472 s | 52.647 s |
+| OPTIMIZE / OPTIMIZE FULL, one observation | 2.936 s | 7.438 s |
+| Files rewritten by OPTIMIZE | 0 | 0 |
+
+**Unlike Q1, the annual liquid CTAS physically clustered on write.** Its history
+explicitly reports **`clusteringOnWriteStatus = kdtree triggered`**, with
+**34 output files and 2,217,253,050 written bytes**. Subsequent `OPTIMIZE FULL`
+planned zero clustering tasks and rewrote zero files; it did not perform an
+additional reclustering pass. A no-op OPTIMIZE alone therefore cannot establish
+whether the preceding CTAS clustered.
+
+The initial preflight gate checked only OPTIMIZE rewrites and returned
+`NOT_VERIFIED`. A separate read-only collector recognized the explicit CTAS
+clustering evidence, yielding **`VERIFIED`, method `CTAS_ON_WRITE`**. The report
+retains the initial gate result, original measured source hashes, and the separate
+post-run collector hash. No writes or performance queries were rerun to change
+that verdict.
+
+The annual freeze and both alternatives passed exact bidirectional `EXCEPT ALL`
+audits across all visible columns, with zero row-multiset differences.
+Per-file row counts, byte sizes, and source-month/pickup-time min/max ranges were
+collected separately; their row/file/byte totals reconcile with table details.
+All 24 partitioned and 34 liquid files individually contain a single source month.
+These observations establish physical preparation, **not query-speed or scan
+savings**. No performance repetitions were launched during the preflight itself.
+
+Production was not modified; all seven Q1 snapshot versions remain unchanged.
+The three annual tables remain at version 0, and all owned warehouses were
+stopped. The November 5 billing refresh observed whole-preparation list-price
+estimates of **$0.053317 partitioned** and **$0.301467 liquid**, provisional.
+The full recorded lifecycles were **76.298 s and 394.863 s**; the liquid
+warehouse's stop-request timeout is included. Freeze/audit and enrichment usage
+ran on the separate existing collector and is excluded. These single
+whole-lifecycle observations are not stage-level or recurring-maintenance costs.
+The original preflight report remains byte-identical to preserve its hash in
+the query report; billing is recorded separately in
+[warehouse_billing_20261105.json](warehouse_billing_20261105.json).
+
+The controlled query comparison below uses these physically prepared annual
+layouts without forcing an unnecessary rewrite or altering production.
+The Gold incremental crossover remains deferred.
+
+### Annual query comparison: selective read reduction, little latency change
+
+Measured **November 5, 2026, 10:46-10:51 AM PST**. Evidence:
+[layout_annual_2024_queries.json](layout_annual_2024_queries.json).
+Both annual layouts and the frozen Silver source remained at **version 0**.
+The same fixed **2X-Small serverless Photon warehouse**, one cluster, DBSQL
+**2026.44**, served both layouts. Three interleaved blocks per layout each ran
+one warmup plus three measured repeats per query: **96 successful workload
+statements, 72 measured and 24 warmups**. Each query/layout has nine measured
+repeats across three blocks, not nine independently provisioned trials.
+
+Monthly fares and airport corridors scan the annual input; weekly demand retains
+the January 1-8 predicate from the original suite. The unchanged **Q1 Gold**
+table is a timing control, not annual Gold. Result caching was disabled and all
+96 final profiles explicitly reported `result_from_cache = false`. Physical
+I/O caches were not cleared.
+
+| Query | Partitioned client median (ms) | Liquid client median (ms) | Partitioned read bytes | Liquid read bytes |
+|---|---:|---:|---:|---:|
+| Monthly fares, decimal distance average | 1,329.323 | 1,330.711 | 292,461,179 | 295,616,129 |
+| Weekly zone demand | 511.994 | 510.671 | 19,154,764 | 10,504,551 |
+| Airport corridors | 585.729 | 615.537 | 226,204,247 | 226,728,494 |
+| Q1 Gold control | 304.280 | 302.802 | 1,868,619 | 1,868,619 |
+
+**The selective weekly query read 45.16% fewer bytes**, reading **one liquid
+file versus two partitioned files**. It pruned 33/34 versus 22/24 files.
+This is actual finer-grained data skipping, unlike the Q1 configuration/no-op
+observation. Median client latency was essentially unchanged (**0.26% lower**).
+Engine-total medians were **346 ms versus 333 ms**, and execution medians
+**228 ms versus 205 ms**; these small samples do not establish a general
+latency advantage.
+
+Monthly and airport full scans showed no material read reduction. All query
+medians had **zero spill and zero remote-read bytes**; median read bytes came
+from the I/O cache. Read-byte reduction is therefore not a measured reduction
+in Azure storage traffic or billing. The unchanged Gold control's per-block
+client medians also varied (partitioned blocks **286-323 ms**, liquid blocks
+**266-408 ms**), illustrating warm-cache/client timing noise.
+
+#### Correctness failure preserved and deterministic average correction
+
+The first annual attempt recorded all 96 statements but correctly **failed**
+the exact-result gate. Monthly results differed only in the average distance
+for the ten-row **2008-12 pickup-month** group: **12.12 versus 12.11**.
+A separate diagnostic reproduced both original hashes. The tables still passed
+exact row-multiset audits; floating-point aggregation order at a rounding
+boundary, not changed source rows, caused the discrepancy.
+
+The corrected annual query averages `CAST(trip_distance_miles AS DECIMAL(28,6))`
+before rounding to two places. A full-source precision guard checked all
+**41,156,210 rows**, confirming **zero** values failed to round-trip through
+that decimal type back to the original DOUBLE. Historical Q1 templates remain
+unchanged; the annual override and exact executed SQL hashes are archived.
+No rows were filtered out to conceal the discrepancy, and exact result checks
+were not weakened.
+
+All **96 corrected statements** returned matching results per query across
+layouts and blocks. Both alternatives again passed exact bidirectional
+`EXCEPT ALL` audits; Q1, annual source and alternative versions remained stable.
+The failed attempt and diagnostic retain separate reports/source evidence;
+none of their samples are pooled into the successful comparison.
+
+**Decision: keep production month partitioning.** Liquid clustering demonstrated
+selective scan reduction on the annual input, but not a meaningful end-to-end
+latency improvement or measured cost saving in this warm-cache serial workload.
+Production was not modified and owned compute was verified stopped. Preparation
+costs were subsequently collected separately, including shutdown overhead, as
+described above. Shared query compute does not support isolated per-layout or
+failed-query-attempt bills; no such attribution or query-serving savings is
+claimed.
 
 ## 10. Detailed evidence
 
@@ -755,8 +914,45 @@ separate post-run accounting collector:
 /Volumes/nyc_taxi_dev/benchmark/reports/layout_experiments/layout_20261104_a/post_run_collectors/layout_experiment.py
 ```
 
+Annual Silver/layout preflight, original source archive, and read-only enrichment:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/experiment_report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/measured_sources/
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/post_run_collectors/layout_preflight.py
+```
+
+Annual query comparison, exact measured Python/SQL sources, and excluded
+initial-attempt diagnostics:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/query_report_decimal.json
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/query_sources_decimal/measured_sources/
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/query_report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/query_sources/measured_sources/
+/Volumes/nyc_taxi_dev/benchmark/reports/layout_preflights/layout_annual_20261104_a/query_result_diagnostic.json
+```
+
+November 5 warehouse billing refresh, including raw signed usage, effective
+prices, collector statement IDs and exact collector sources:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/warehouse_billing_20261105_a/report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/warehouse_billing_20261105_a/collector_sources/
+```
+
+This refresh selected eleven dedicated warehouses: six successful clean SQL
+samples, four Q1/annual layout preparation warehouses, and the excluded failed
+clean-SQL warehouse. Their observed estimates total **$4.831575**; this is **not
+total project spending** and excludes shared collector/query compute, other
+experiments, storage and non-list-price adjustments. Twelve unique records were
+observed, all ORIGINAL at this collection; signed corrections will be retained
+if present in later collections. All original measurement reports and source
+hashes were left unchanged.
+
 The performance experiment directory also contains its pinned input manifest,
 per-sample measurements, and complete output-audit report. Local full reports
 live under the Git-ignored `benchmark-results/` directory, including
-`perf_20261030_a.json`. Billing-only refreshes update the full report without
-rerunning measured pipeline workloads.
+`perf_20261030_a.json`. Earlier billing-only collectors update their reports;
+the November 5 refresh instead persists separate evidence to preserve original
+measurement hashes. Neither approach reruns measured pipeline workloads.

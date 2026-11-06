@@ -1,0 +1,152 @@
+{
+  "collection_id": "warehouse_billing_20261105_a",
+  "status": "OBSERVED_PROVISIONAL",
+  "started_at": "2026-11-06T00:51:37.613173+00:00",
+  "completed_at": "2026-11-06T00:52:31.092619+00:00",
+  "collector_stopped_at": "2026-11-06T00:52:37.706592+00:00",
+  "remote_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/warehouse_billing_20261105_a/report.json",
+  "collector_warehouse_id": "919966835b70007d",
+  "sku_name": "PREMIUM_SERVERLESS_SQL_COMPUTE_US_WEST",
+  "effective_list_price_usd_per_dbu": "0.700000000000000000",
+  "dedicated_warehouses": 11,
+  "unique_billing_records": 12,
+  "record_types_observed": ["ORIGINAL"],
+  "warehouses": [
+    {
+      "group": "sql_clean",
+      "sample_id": "2xs_1",
+      "warehouse_id": "29878e3b768ed59b",
+      "billing_record_ids": ["Jkxq4Vz5xItILZM5LJ_8C738"],
+      "dbu_quantity": "0.700258888888888889",
+      "list_price_compute_estimate_usd": "0.490181",
+      "completed_measured_queries": 1516,
+      "amortized_cost_per_measured_query_usd": "0.0003233383905013192612137203166"
+    },
+    {
+      "group": "sql_clean",
+      "sample_id": "xs_1",
+      "warehouse_id": "4f7dc7fe9a62f7e9",
+      "billing_record_ids": ["JkxB4yenoGRGeJt1PeLEGejK"],
+      "dbu_quantity": "1.050776666666666667",
+      "list_price_compute_estimate_usd": "0.735544",
+      "completed_measured_queries": 1392,
+      "amortized_cost_per_measured_query_usd": "0.0005284080459770114942528735632"
+    },
+    {
+      "group": "sql_clean",
+      "sample_id": "xs_2",
+      "warehouse_id": "6595e80d091e78ac",
+      "billing_record_ids": ["JkxBnzLlRdtKdqYI717z2qOF"],
+      "dbu_quantity": "1.049991666666666667",
+      "list_price_compute_estimate_usd": "0.734994",
+      "completed_measured_queries": 1440,
+      "amortized_cost_per_measured_query_usd": "0.0005104125"
+    },
+    {
+      "group": "sql_clean",
+      "sample_id": "2xs_2",
+      "warehouse_id": "14a759ff064f659f",
+      "billing_record_ids": ["JkwJHjrvIbtG4aITrBvG48pz"],
+      "dbu_quantity": "0.701898888888888889",
+      "list_price_compute_estimate_usd": "0.491329",
+      "completed_measured_queries": 1400,
+      "amortized_cost_per_measured_query_usd": "0.0003509492857142857142857142857"
+    },
+    {
+      "group": "sql_clean",
+      "sample_id": "2xs_3",
+      "warehouse_id": "6bedd63435640628",
+      "billing_record_ids": ["JkwGsxxDJr5CsK6EI-HI99nA"],
+      "dbu_quantity": "0.701572222222222222",
+      "list_price_compute_estimate_usd": "0.491101",
+      "completed_measured_queries": 1420,
+      "amortized_cost_per_measured_query_usd": "0.0003458457746478873239436619718"
+    },
+    {
+      "group": "sql_clean",
+      "sample_id": "xs_3",
+      "warehouse_id": "799f904bf9fe2f2f",
+      "billing_record_ids": ["JkxLUVAiPz9LG68nFpmrSDsd", "JkxJ0fP6ojhDba7-DQ6KjNCD"],
+      "dbu_quantity": "1.064038333333333334",
+      "list_price_compute_estimate_usd": "0.744827",
+      "completed_measured_queries": 1336,
+      "amortized_cost_per_measured_query_usd": "0.0005575052395209580838323353293"
+    },
+    {
+      "group": "q1_layout",
+      "sample_id": "partitioned",
+      "warehouse_id": "da49465164de4bae",
+      "billing_record_ids": ["JkwP-Fq-5R1CZbB9ovCAdacr"],
+      "dbu_quantity": "0.043202222222222222",
+      "list_price_compute_estimate_usd": "0.030242"
+    },
+    {
+      "group": "q1_layout",
+      "sample_id": "liquid",
+      "warehouse_id": "ee99da42fd05dd89",
+      "billing_record_ids": ["Jkwd_vppUORITJEfbiq5W4Bq"],
+      "dbu_quantity": "0.385286666666666667",
+      "list_price_compute_estimate_usd": "0.269701"
+    },
+    {
+      "group": "annual_layout",
+      "sample_id": "partitioned",
+      "warehouse_id": "fd677bd95bbe63c8",
+      "billing_record_ids": ["Jk3pH7auXcJAb46cDRySOHSY"],
+      "dbu_quantity": "0.076166666666666667",
+      "list_price_compute_estimate_usd": "0.053317"
+    },
+    {
+      "group": "annual_layout",
+      "sample_id": "liquid",
+      "warehouse_id": "782bf61ad602960f",
+      "billing_record_ids": ["Jk2Y-AQjb0ZCk6vtr72LlZsU"],
+      "dbu_quantity": "0.430666666666666667",
+      "list_price_compute_estimate_usd": "0.301467"
+    },
+    {
+      "group": "failed_sql",
+      "sample_id": "2xs_1",
+      "warehouse_id": "299389179bc76a7e",
+      "billing_record_ids": ["JkuY68NuPC9Lbbz1uQHqAVPu"],
+      "dbu_quantity": "0.698388888888888889",
+      "list_price_compute_estimate_usd": "0.488872",
+      "included_in_successful_comparison": false
+    }
+  ],
+  "sql_clean_summary": [
+    {
+      "size": "2X-Small",
+      "samples": 3,
+      "median_full_sample_list_price_usd": "0.491101",
+      "median_amortized_cost_per_measured_query_usd": "0.0003458457746478873239436619718"
+    },
+    {
+      "size": "X-Small",
+      "samples": 3,
+      "median_full_sample_list_price_usd": "0.735544",
+      "median_amortized_cost_per_measured_query_usd": "0.0005284080459770114942528735632"
+    }
+  ],
+  "x_small_vs_2x_small": {
+    "median_whole_sample_cost_increase_percent": "49.77448630729727693488712100",
+    "median_amortized_cost_per_query_increase_percent": "52.78719149163946353989921820"
+  },
+  "selected_warehouse_list_price_total_usd": "4.831575",
+  "scope": "Entire signed usage on eleven fresh dedicated warehouse IDs. Includes startup, metadata, warmups and shutdown; no hourly-window proration or per-query execution billing. Effective USD list prices; excludes collector, storage, discounts, credits and taxes. Observed records can receive later corrections. Selected warehouse total is not total project spending.",
+  "layout_scope": "Single whole-preparation lifecycle per layout, not repeated maintenance or stage-level costs. Both liquid preparation warehouses encountered stop timeouts, retained in these costs. Q1 physical clustering remains NOT_APPLIED; annual clustering occurred on write, not during OPTIMIZE FULL. No per-layout query-serving cost attribution on shared compute.",
+  "measurement_reports_unchanged": true,
+  "no_workloads_rerun": true,
+  "source_measurement_report_sha256": {
+    "sql_clean": "45c34ff260ad48c106f109d4f13fb2d69a7cebe9bbfe85f77bb8458a3e1b8b1d",
+    "q1_layout": "53ce30ad195fe5a37a066517a29fcf91f08daf93e77e90d86c1162304cf649e2",
+    "annual_layout": "5b545a0ece44c4e6119fe540396fd2db2aa0b6606ffcb1d7a19fffb623d3bceb",
+    "failed_sql": "ac910762fdf5312207b545ea0a5bea8784ccab9b8197f901e1786bfca778d303"
+  },
+  "collector_source_sha256": {
+    "refresh_billing_20261105.py": "3255ba846aa83551adc073253e765ccbfa20ca80aebfa033c5a881250c385dcd",
+    "warehouse_experiment.py": "b7722035b4fd488f169abe7fc4290f816b85bf01b4db4468e255dfa56f7d5b03",
+    "benchmark.py": "dc017a0aa65b217218cdc96f7e13c53502520c85f894bac16259b4009718acb4",
+    "layout_experiment.py": "6437c25e1eb7a551e1fb6cb81b7c5873ae52f82a8e44376711303eb36c0512df"
+  }
+}

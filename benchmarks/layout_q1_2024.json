@@ -52,7 +52,10 @@
       "optimize_data_files_added": 0,
       "optimize_data_files_removed": 0,
       "physical_optimize_rewrite": false,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "0.043202222222222222",
+      "list_price_compute_estimate_usd": "0.030242",
+      "preparation_lifecycle_seconds": 46.838384
     },
     {
       "layout": "liquid",
@@ -72,7 +75,11 @@
       "physical_optimize_rewrite": false,
       "clustering_tasks_planned": 0,
       "clustering_on_write_status": "Reason for skipping: Estimated ingestion size is not within the expected range",
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "0.385286666666666667",
+      "list_price_compute_estimate_usd": "0.269701",
+      "preparation_lifecycle_seconds": 354.299084,
+      "stop_request_timeout_observed": true
     }
   ],
   "queries": [
@@ -126,9 +133,12 @@
     "status": "PASSED",
     "scope": "Both copies have 9,551,977 rows and zero differences in bidirectional EXCEPT ALL across all visible columns. All 96 workload statements (72 measured, 24 warmups) have matching results per query and final profiles without result-cache hits. Frozen and alternative versions unchanged during measurements. All query medians had zero spill."
   },
-  "billing_status": "PENDING",
-  "billing_collected_at": "2026-11-04T21:20:24.005959+00:00",
-  "billing_scope": "Whole dedicated CTAS/optimization warehouse usage is selected by warehouse ID, not hourly overlap windows. Includes startup, metadata and shutdown; excludes separate exact audits, query comparison, billing collector and storage. These are single preparation observations, not stage-level costs or recurring maintenance measurements. Missing records are pending, not zero; future signed usage estimates use effective USD list prices and can be corrected.",
+  "billing_status": "OBSERVED_PROVISIONAL",
+  "billing_first_pending_collection_at": "2026-11-04T21:20:24.005959+00:00",
+  "billing_collected_at": "2026-11-06T00:52:20.347137+00:00",
+  "billing_source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/warehouse_billing_20261105_a/report.json",
+  "billing_portable_evidence": "warehouse_billing_20261105.json",
+  "billing_scope": "Whole dedicated CTAS/optimization warehouse signed usage at effective USD list prices, not hourly overlap attribution. Includes startup, metadata and shutdown; excludes separate audits, query comparison, collector and storage. Liquid warehouse stop timeout is retained in its much longer lifecycle. These are single preparation observations, not stage-level, physical reclustering or recurring maintenance costs. Observed records remain provisional. Original measured report and pending billing remain unchanged; refreshed records are separate.",
   "write_metrics_scope": "CTAS bytes/files come from committed Delta history. OPTIMIZE zero-write counters come from explicit returned operation metrics. Sparse Delta OPTIMIZE history omits these counters; original history accounting remains INCOMPLETE/null rather than silently replacing missing values with zero. Post-run enrichment parsed saved result rows without rerunning table writes or queries.",
   "interpretation": "The keys were registered but clustering on write was skipped and OPTIMIZE FULL planned zero physical clustering tasks. Weekly scan volume was essentially identical; client latency also varied for the unchanged Gold control. This is a supported-configuration/no-op observation, not a fully reclustered layout benchmark or evidence that liquid clustering is generally ineffective. Retain production month partitioning. A meaningful physical-clustering comparison requires a dataset/layout on which the platform actually schedules file rewrites.",
   "production_changed": false

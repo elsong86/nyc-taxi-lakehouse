@@ -39,7 +39,7 @@ def target_table(experiment_id, layout):
     return f"{BASE.catalog}.benchmark.{experiment_id}_{layout}_trips"
 
 
-def creation_sql(experiment_id, layout, source_version):
+def creation_sql(experiment_id, layout, source_version, snapshot=BASE):
     table = target_table(experiment_id, layout)
     if not isinstance(source_version, int) or source_version < 0:
         raise ValueError("Source version must be a nonnegative integer.")
@@ -52,7 +52,7 @@ def creation_sql(experiment_id, layout, source_version):
         f"CREATE TABLE {table} USING DELTA {clause} "
         f"TBLPROPERTIES ('delta.targetFileSize'='{TARGET_BYTES}', "
         "'delta.parquet.compression.codec'='zstd') "
-        f"AS SELECT * FROM {BASE.table('trips')} VERSION AS OF {source_version}"
+        f"AS SELECT * FROM {snapshot.table('trips')} VERSION AS OF {source_version}"
     )
 
 
@@ -133,7 +133,7 @@ def check_versions(cursor, report):
         )
 
 
-def prepare_layout(client, report, layout, reference, path):
+def prepare_layout(client, report, layout, reference, path, snapshot=BASE):
     from databricks.sdk.service.sql import CreateWarehouseRequestWarehouseType
 
     table = target_table(report["experiment_id"], layout)
@@ -166,7 +166,8 @@ def prepare_layout(client, report, layout, reference, path):
                 creation_sql(
                     report["experiment_id"],
                     layout,
-                    report["snapshot_versions"][BASE.table("trips")],
+                    report["snapshot_versions"][snapshot.table("trips")],
+                    snapshot,
                 )
             )
             cursor.fetchall()
@@ -206,7 +207,7 @@ def prepare_layout(client, report, layout, reference, path):
             LOGGER.error("Creation failed without a warehouse ID; inspect %s.", name)
 
 
-def audit_and_measure(client, report, reference, path):
+def audit_and_measure(client, report, reference, path, snapshot=BASE):
     reference = client.warehouses.get(reference.id)
     if reference.state.value != "STOPPED" or reference.num_active_sessions:
         raise ValueError("Query/audit warehouse must be stopped and unused.")
@@ -221,9 +222,9 @@ def audit_and_measure(client, report, reference, path):
                 differences = query_rows(
                     cursor,
                     "SELECT count(*) AS differences FROM ("
-                    f"(SELECT * FROM {BASE.table('trips')} EXCEPT ALL SELECT * FROM {table}) "
+                    f"(SELECT * FROM {snapshot.table('trips')} EXCEPT ALL SELECT * FROM {table}) "
                     "UNION ALL "
-                    f"(SELECT * FROM {table} EXCEPT ALL SELECT * FROM {BASE.table('trips')})"
+                    f"(SELECT * FROM {table} EXCEPT ALL SELECT * FROM {snapshot.table('trips')})"
                     ")",
                 )[0]["differences"]
                 count = query_rows(cursor, f"SELECT count(*) AS rows FROM {table}")[0]["rows"]
@@ -231,6 +232,10 @@ def audit_and_measure(client, report, reference, path):
                     raise ValueError("Layout copy failed exact row-multiset audit.")
                 item["audit"] = {"status": "PASSED", "rows": count, "differences": differences}
                 save(client, path, report)
+            if report.get("decimal_distance_average"):
+                report["distance_precision_validation"] = validate_distance_precision(
+                    cursor, snapshot.table("trips")
+                )
             cursor.execute("SET use_cached_result = false")
             setting = query_rows(cursor, "SET use_cached_result")
             if not setting or str(next(reversed(setting[0].values()))).lower() != "false":
@@ -244,7 +249,12 @@ def audit_and_measure(client, report, reference, path):
                 ("liquid", 3),
             )
             for layout, repetition in order:
-                for query in layout_queries(report["experiment_id"], layout):
+                queries = (
+                    report["queries"][layout]
+                    if "queries" in report
+                    else layout_queries(report["experiment_id"], layout)
+                )
+                for query in queries:
                     for iteration in range(4):
                         started_at = now()
                         started = time.perf_counter()
@@ -289,6 +299,19 @@ def audit_and_measure(client, report, reference, path):
         raise ValueError("Query profiles incomplete; recorded measurements must not be rerun.")
     report["status"] = "MEASURED_AND_VERIFIED"
     save(client, path, report)
+
+
+def validate_distance_precision(cursor, table):
+    observed = query_rows(
+        cursor,
+        "SELECT count(*) AS rows, count_if("
+        "try_cast(trip_distance_miles AS DECIMAL(28,6)) IS NULL OR "
+        "CAST(try_cast(trip_distance_miles AS DECIMAL(28,6)) AS DOUBLE) "
+        f"<> trip_distance_miles) AS non_roundtripping_rows FROM {table}",
+    )[0]
+    if observed["non_roundtripping_rows"] != 0:
+        raise ValueError("Decimal distance average would discard source precision or overflow.")
+    return observed
 
 
 def run(client, experiment_id, path):

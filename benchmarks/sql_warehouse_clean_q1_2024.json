@@ -46,7 +46,10 @@
       "queries_per_minute": 151.31333220570963,
       "startup_seconds": 5.276909416978015,
       "shutdown_seconds": 2.3861059159971774,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "0.700258888888888889",
+      "list_price_compute_estimate_usd": "0.490181",
+      "amortized_cost_per_measured_query_usd": "0.0003233383905013192612137203166"
     },
     {
       "sample_id": "xs_1", "size": "X-Small", "warehouse_id": "4f7dc7fe9a62f7e9",
@@ -55,7 +58,10 @@
       "queries_per_minute": 139.0644619133857,
       "startup_seconds": 5.092993500002194,
       "shutdown_seconds": 3.988515999983065,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "1.050776666666666667",
+      "list_price_compute_estimate_usd": "0.735544",
+      "amortized_cost_per_measured_query_usd": "0.0005284080459770114942528735632"
     },
     {
       "sample_id": "xs_2", "size": "X-Small", "warehouse_id": "6595e80d091e78ac",
@@ -64,7 +70,10 @@
       "queries_per_minute": 143.87775296820953,
       "startup_seconds": 3.432289916992886,
       "shutdown_seconds": 3.5385212499822956,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "1.049991666666666667",
+      "list_price_compute_estimate_usd": "0.734994",
+      "amortized_cost_per_measured_query_usd": "0.0005104125"
     },
     {
       "sample_id": "2xs_2", "size": "2X-Small", "warehouse_id": "14a759ff064f659f",
@@ -73,7 +82,10 @@
       "queries_per_minute": 139.6670857132015,
       "startup_seconds": 2.9500074169773143,
       "shutdown_seconds": 2.396734291978646,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "0.701898888888888889",
+      "list_price_compute_estimate_usd": "0.491329",
+      "amortized_cost_per_measured_query_usd": "0.0003509492857142857142857142857"
     },
     {
       "sample_id": "2xs_3", "size": "2X-Small", "warehouse_id": "6bedd63435640628",
@@ -82,7 +94,10 @@
       "queries_per_minute": 141.81461424406044,
       "startup_seconds": 3.723816166020697,
       "shutdown_seconds": 2.367952458007494,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "0.701572222222222222",
+      "list_price_compute_estimate_usd": "0.491101",
+      "amortized_cost_per_measured_query_usd": "0.0003458457746478873239436619718"
     },
     {
       "sample_id": "xs_3", "size": "X-Small", "warehouse_id": "799f904bf9fe2f2f",
@@ -91,7 +106,10 @@
       "queries_per_minute": 133.3615549945985,
       "startup_seconds": 4.772807291999925,
       "shutdown_seconds": 3.8901844159991015,
-      "billing_status": "PENDING"
+      "billing_status": "OBSERVED_RECORDS",
+      "dbu_quantity": "1.064038333333333334",
+      "list_price_compute_estimate_usd": "0.744827",
+      "amortized_cost_per_measured_query_usd": "0.0005575052395209580838323353293"
     }
   ],
   "summary": [
@@ -105,9 +123,9 @@
         {"query": "03_airport_corridors", "median_client_elapsed_ms": 406.9799580029212, "median_engine_total_ms": 258, "median_engine_execution_ms": 162.0},
         {"query": "04_gold_demand", "median_client_elapsed_ms": 309.29845801438205, "median_engine_total_ms": 170, "median_engine_execution_ms": 88}
       ],
-      "billing_status": "PENDING_OR_INCOMPLETE",
-      "median_full_sample_list_price_usd": null,
-      "median_amortized_cost_per_measured_query_usd": null
+      "billing_status": "OBSERVED_PROVISIONAL",
+      "median_full_sample_list_price_usd": "0.491101",
+      "median_amortized_cost_per_measured_query_usd": "0.0003458457746478873239436619718"
     },
     {
       "size": "X-Small", "samples": 3,
@@ -119,9 +137,9 @@
         {"query": "03_airport_corridors", "median_client_elapsed_ms": 410.09429199039005, "median_engine_total_ms": 270.5, "median_engine_execution_ms": 170.0},
         {"query": "04_gold_demand", "median_client_elapsed_ms": 310.14185400272254, "median_engine_total_ms": 176.0, "median_engine_execution_ms": 88.0}
       ],
-      "billing_status": "PENDING_OR_INCOMPLETE",
-      "median_full_sample_list_price_usd": null,
-      "median_amortized_cost_per_measured_query_usd": null
+      "billing_status": "OBSERVED_PROVISIONAL",
+      "median_full_sample_list_price_usd": "0.735544",
+      "median_amortized_cost_per_measured_query_usd": "0.0005284080459770114942528735632"
     }
   ],
   "output_audit": {
@@ -131,9 +149,12 @@
     "profiled_workload_statements": 8528,
     "scope": "Consistent result hashes/counts per query across all six samples. Every workload statement has a final profile without a result-cache hit. Frozen versions and reported engine versions agree. All six dedicated warehouses stopped and unused."
   },
-  "billing_status": "PENDING",
-  "billing_last_collected_at": "2026-11-04T19:27:25.813140+00:00",
-  "billing_scope": "All six fresh warehouses had no records at the first refresh. Later refreshes select all their signed DBU usage by dedicated warehouse ID, not overlapping hourly windows. Full-sample costs include startup, warmup, metadata and shutdown; separate collector and failed-attempt costs are excluded. Amortized cost per measured query is not execution-only pricing. Estimates use effective USD list prices, exclude discounts/credits/taxes/storage and may be corrected later.",
+  "billing_status": "OBSERVED_PROVISIONAL",
+  "billing_first_pending_collection_at": "2026-11-04T19:27:25.813140+00:00",
+  "billing_last_collected_at": "2026-11-06T00:52:13.285114+00:00",
+  "billing_source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/warehouse_billing_20261105_a/report.json",
+  "billing_portable_evidence": "warehouse_billing_20261105.json",
+  "billing_scope": "Seven unique priced records across six fresh dedicated warehouse IDs, with signed usage and effective USD list prices at $0.70/DBU. Entire sample costs include startup, warmup, metadata and shutdown; separate collector and failed-attempt costs are excluded. Amortized cost per measured query is whole-sample operating cost, not execution-only pricing. No hourly proration. Estimates exclude discounts/credits/taxes/storage and may be corrected later. Original measured report and its pending collection remain unchanged; refreshed raw usage is in a separate billing report.",
   "excluded_attempt": {
     "experiment_id": "sql_clean_20261103_a",
     "warehouse_id": "299389179bc76a7e",
@@ -141,8 +162,11 @@
     "profiled_workload_statements": null,
     "completed_statements_recorded": 608,
     "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/warehouse_experiments/sql_clean_20261103_a/experiment_report.json",
-    "scope": "November 3 attempt failed during a prolonged connector/network stall before completing a valid timed window. Partial measurements and errors retained; warehouse stopped. Restarted with six different warehouse IDs and bounded requests. Failed-attempt cost has not been collected and is not zero or part of the successful-sample comparison."
+    "billing_status": "OBSERVED_RECORDS",
+    "dbu_quantity": "0.698388888888888889",
+    "list_price_compute_estimate_usd": "0.488872",
+    "scope": "November 3 attempt failed during a prolonged connector/network stall before completing a valid timed window. Partial measurements and errors retained; warehouse stopped. Restarted with six different warehouse IDs and bounded requests. Entire failed-warehouse list-price cost observed separately at $0.488872, provisional and excluded from successful-sample costs and denominators."
   },
-  "interpretation": "Larger X-Small compute did not provide a consistent latency or throughput benefit on this small, warm-cache serial workload. Three independent sample windows per size do not establish statistical significance. Keep the baseline 2X-Small configuration; cost conclusions await dedicated usage records. Do not compare these timings directly with the earlier experiment, which used a different repetition pattern and engine version.",
+  "interpretation": "X-Small had no consistent latency or throughput benefit and cost 49.77% more per whole sample and 52.79% more per amortized measured query, comparing medians of three independent samples per size. Retain the existing 2X-Small baseline; this validates an existing choice, not newly achieved production savings. Warm-cache serial results do not establish statistical significance or generalize to concurrency/cold-cache workloads. Earlier SQL timing/billing was collected under different conditions and remains a separate confounded comparison.",
   "production_changed": false
 }
