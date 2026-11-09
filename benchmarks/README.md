@@ -1,7 +1,8 @@
 # Benchmark results and experiment log
 
-Results recorded through **November 4, 2026**. All money amounts are USD
-list-price estimates, not invoices or total project spending.
+Results recorded through **November 6, 2026**. Money amounts are USD estimates
+from effective Databricks list prices and, where available, observed Azure
+pre-tax resource costs, not invoices or total project spending.
 
 ## At a glance
 
@@ -14,6 +15,7 @@ list-price estimates, not invoices or total project spending.
 | SQL warehouse 2X-Small vs X-Small | Three sessions per size, nine measured repetitions per query; all results matched | Modest, mixed latency differences; billing observed, but hourly records and uneven shutdowns prevent clean cost attribution |
 | Isolated SQL sizing rerun | Six fresh warehouses, ten-minute windows; 8,504 measured queries | Median throughput 141.815 vs 139.064 queries/min; full-sample billing pending |
 | Partitioned vs liquid-configured Q1 copies | Exact row audits and 96 query profiles passed | Clustering skipped on write; `OPTIMIZE FULL` planned zero physical clustering tasks; weekly scans unchanged |
+| Classic Jobs vs Standard serverless | Six Q1 replays; DBU and Azure infrastructure costs observed | Serverless: 43.19% lower median job time and 65.61% lower aggregate attributable compute/infrastructure cost |
 
 **Current finding:** Performance Optimized had **58.14% lower median total job
 duration**, but only **5.44% lower median pipeline-call duration**. Most of the
@@ -865,7 +867,172 @@ described above. Shared query compute does not support isolated per-layout or
 failed-query-attempt bills; no such attribution or query-serving savings is
 claimed.
 
-## 10. Detailed evidence
+## 10. Classic Jobs versus Standard serverless
+
+The isolated comparison `compute_20261105_a` completed on **November 6, 2026
+UTC**; its ID uses the November 5 local-date label. Three fresh Q1 replays per
+configuration processed identical checksum-pinned Parquet and taxi zones,
+without live downloads. Each replay wrote new Bronze/Silver/Gold/ops schemas.
+The interleaved order was serverless, classic, classic, serverless, serverless,
+classic.
+
+The approved classic profile used **one Standard_D4s_v3 driver plus one worker**
+(**8 vCPUs / 32 GiB total**), **Photon, DBR 17.3 LTS, on-demand VMs**, no
+autoscaling or instance pools, and no Jobs task retries. Each measurement used
+a different Databricks job cluster ID. Standard serverless used environment 4.
+Prepare and final audit used Performance Optimized serverless outside the six
+measurements.
+
+**This compares deployment configurations, not identical hardware/runtime
+stacks.** The actual Spark versions were **4.2.0 serverless versus 4.0.0
+classic**; both reported Python **3.12.3**. Serverless capacity was managed by
+Databricks and was not matched to the classic cluster.
+
+| Metric | Standard serverless | Classic Jobs |
+|---|---:|---:|
+| Median total job time | 540.825 s (9.01 min) | 952.004 s (15.87 min) |
+| Total job time range | 522.140-546.375 s | 704.558-1,070.454 s |
+| Median pipeline-call time | 193.418 s | 416.318 s |
+| Median internal processing time | 183.766 s | 391.450 s |
+| Median API task setup time | 185 s | 501 s |
+
+Standard serverless had **43.19% lower median total job time** and **53.54%
+lower median pipeline-call time** in these three trials per configuration.
+All three serverless job times were below all three classic job times.
+Task setup is **not** a complete measure of scheduling/environment overhead;
+the total job timer includes work outside the pipeline call. The pipeline call
+also includes final operational writes excluded from the internal processing
+timer. These timings must not be interchanged.
+
+**Fresh job clusters did not imply fresh Azure VMs.** Read-only
+`system.compute.node_timeline` evidence mapped the first two classic cluster
+IDs to the same pair of VM instance IDs, with their driver/worker roles swapped.
+The third classic sample's active VM/disk resources were captured separately
+and their `ClusterId` tags matched its cluster. Physical caches and platform
+VM/image reuse were not controlled. Classic setup varied from **202 to 561
+seconds**; these observations do not establish universal cold-start behavior.
+
+All six samples processed **9,554,778 Bronze rows**, yielding **9,551,977 valid
+Silver rows** and **2,801 quarantine rows**. The final audit passed exact
+Bronze/Silver/quarantine row-multiset checks excluding provenance, exact Gold
+keys/counts/decimal metrics, and the existing absolute-plus-relative `1e-9`
+floating-aggregate tolerance. Frozen Q1 versions remained unchanged. All three
+classic clusters terminated, both experiment jobs were inactive, and the
+managed resource group had **zero remaining VM/disk resources** at final
+verification. Production was not changed.
+
+### Cost accounting: DBUs and attributable Azure infrastructure observed
+
+A separate billing-only collection, `compute_billing_20261105_a`, queried all
+eight exact job/run IDs, keeping prepare/audit separate from measurements.
+At **03:52 UTC November 6**, **no DBU usage records** had arrived. The Azure
+Cost Management query succeeded after an initial throttle but likewise
+returned **no infrastructure cost rows**. Missing records are **not zero
+cost**. The dedicated billing collector was stopped afterward; original
+measurement reports remained byte-identical.
+
+Classic cost must include **Databricks DBUs plus Azure VM/disk charges**.
+The official West US Linux on-demand VM reference was **$0.234/node-hour**,
+not an observed bill or complete estimate. The third sample had one **64-GiB
+P6** and one **128-GiB P10 Premium SSD** per node. These disk observations are
+not inferred for earlier allocations. Node-timeline minutes are not complete
+Azure allocated lifetimes. Because the first two classic runs shared VM
+instance IDs, future resource/day Azure charges must not be counted once for
+each run; any allocation or amortization must be labeled explicitly.
+
+#### November 6 billing refresh
+
+The follow-up collection `compute_billing_20261106_b` at **07:33 UTC** found
+priced DBU records for all six measured runs. Twelve measured usage records
+were observed, all ORIGINAL at this collection; signed corrections remain
+supported. Prepare (**$0.121589**) and audit (**$0.905398**) were recorded
+separately and excluded from the comparison.
+
+| Databricks DBU list-price estimate | Standard serverless | Classic Jobs |
+|---|---:|---:|
+| Median per measured replay | $0.134619 | $0.218073 |
+| Total for three measured replays | $0.393539 | $0.677178 |
+
+Serverless had **38.27% lower median Databricks charges**, in addition to its
+43.19% lower median job time. **This is not the total cloud-cost savings
+percentage:** serverless infrastructure is included in its SKU, whereas
+classic Azure VM/disk charges were still uncollected at this refresh. The Azure Cost
+Management request returned **HTTP 429**, so current infrastructure costs
+could not be refreshed. All estimates remain provisional; the billing
+collector was stopped and original measurement/earlier collection reports
+were preserved.
+
+#### Compute and Azure infrastructure closeout
+
+The Azure query at **17:34 UTC November 6** returned cost rows for all **four
+recorded VMs**, **eight disks**, and **four matching public IPs**, plus VM
+bandwidth. Explicit zero-cost container-root disk rows were retained; no
+missing disk cost was silently treated as zero. The first two classic clusters
+shared VM IDs, so each resource's daily cost was counted **once**, not once per
+job. Twenty attributable resource/service rows were reconciled.
+
+The **17:36 UTC** DBU refresh left all six measured replay costs unchanged.
+Additional late audit records raised its separately excluded estimate to
+**$1.021279**. Preparation, audit and the billing collector are not part of the
+measured configuration comparison.
+
+| Three-replay cost component | Standard serverless | Classic Jobs |
+|---|---:|---:|
+| Databricks DBU list-price estimate | $0.393539 | $0.677178 |
+| Azure VMs | Included in serverless SKU | $0.401707 |
+| Azure managed disks | Included in serverless SKU | $0.047442 |
+| Azure public IPs and bandwidth | Included in serverless SKU | $0.017989 |
+| Combined attributable cost, three replays | $0.393539 | $1.144316 |
+| Amortized mean cost per replay | $0.131180 | $0.381439 |
+
+**Standard serverless had 65.61% lower observed aggregate compute/infrastructure
+cost**, alongside **43.19% lower median total job time**, for these configurations.
+The cost comparison uses **three-replay totals or amortized means**, not median
+per-run infrastructure bills: shared resource/day charges do not permit that
+per-run attribution.
+
+These combined amounts use effective USD list-price DBU estimates plus observed
+Azure pre-tax resource costs. One shared workspace storage-account row,
+**$0.0141080595**, was recorded but excluded because it was not separately
+attributable to classic measurements. Shared ADLS storage and invoice-level
+adjustments are also excluded. This is an **attributable compute/infrastructure
+comparison, not total project spending or a final invoice**; later billing
+corrections remain possible. Exact resources, raw inputs, reconciliation source
+and hashes are archived under `compute_cost_closeout_20261106_c`.
+
+**Decision: retain Standard serverless on observed latency and attributable
+compute/infrastructure cost for this workload.** Production already used Standard,
+so this is supporting evidence, not newly realized production savings. Three
+small trials with different runtimes and opaque serverless hardware do not
+establish concurrency, scaling, or general price-performance claims.
+
+Portable values and evidence hashes are in [`compute_q1_2024.json`](compute_q1_2024.json).
+The isolated bundle is `compute-experiments/databricks.yml`. Billing can be
+refreshed without rerunning the six measurements:
+
+```bash
+DATABRICKS_HOST=<workspace-host> .venv/bin/python -m nyc_taxi_lakehouse.compute_billing \
+  --experiment-report benchmark-results/compute_20261105_a.json \
+  --collection-id compute_billing_<new-collection-id>
+```
+
+Use a new lowercase identifier for each collection. Full measurements, exact
+measured Python sources, infrastructure metadata and separate billing evidence:
+
+```text
+/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/experiment_report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/measured_sources/
+/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/post_run_evidence/manifest.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261105_a/report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261105_a/collector_sources/
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_b/report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_b/compute_azure_cost_20261106_b.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_c/report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_cost_closeout_20261106_c/report.json
+/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_cost_closeout_20261106_c/manifest.json
+```
+
+## 11. Detailed evidence
 
 The JSON files beside this document contain exact values, source hashes,
 configuration, and run identifiers; displayed tables above round timings.

@@ -111,7 +111,7 @@ def audit_versions(spark, snapshot: dict):
     )
 
 
-def prepare(spark, config: ExperimentConfig) -> dict:
+def prepare(spark, config: ExperimentConfig, *, plan=None, hashes=None) -> dict:
     snapshot_config = SnapshotConfig(catalog=config.catalog)
     snapshot = json.loads((snapshot_config.report_root / "dataset_q1_2024.json").read_text())
     audit_versions(spark, snapshot)
@@ -151,8 +151,8 @@ def prepare(spark, config: ExperimentConfig) -> dict:
         "snapshot": snapshot,
         "inputs": inputs,
         "input_sha256": digest(inputs),
-        "code_sha256": code_hashes(),
-        "plan": sample_plan(),
+        "code_sha256": code_hashes() if hashes is None else hashes,
+        "plan": sample_plan() if plan is None else plan,
         "scope": (
             "Fresh Bronze/Silver/Gold replay from checksum-pinned Azure landing files. "
             "No live source discovery or internet downloads. New schemas for each sample; "
@@ -164,26 +164,32 @@ def prepare(spark, config: ExperimentConfig) -> dict:
     return manifest
 
 
-def load_manifest(config: ExperimentConfig) -> dict:
+def load_manifest(config: ExperimentConfig, *, plan=None, hashes=None) -> dict:
     manifest = json.loads((config.root / "manifest.json").read_text())
     if manifest["experiment_id"] != config.experiment_id:
         raise ValueError("Experiment manifest ID mismatch.")
-    if manifest["code_sha256"] != code_hashes():
+    if manifest["code_sha256"] != (code_hashes() if hashes is None else hashes):
         raise ValueError("Pipeline source changed during the experiment.")
     if manifest["input_sha256"] != digest(manifest["inputs"]):
         raise ValueError("Pinned input metadata changed during the experiment.")
-    if manifest["plan"] != sample_plan():
+    if manifest["plan"] != (sample_plan() if plan is None else plan):
         raise ValueError("Experiment sample plan changed.")
     return manifest
 
 
-def measure(spark, config: ExperimentConfig, performance_target: str) -> dict:
+def measure(
+    spark,
+    config: ExperimentConfig,
+    performance_target: str,
+    *,
+    plan=None,
+    hashes=None,
+    sample_key="performance_target",
+) -> dict:
     from nyc_taxi_lakehouse.pipeline import run
 
-    manifest = load_manifest(config)
-    if {"sample_id": config.sample_id, "performance_target": performance_target} not in manifest[
-        "plan"
-    ]:
+    manifest = load_manifest(config, plan=plan, hashes=hashes)
+    if {"sample_id": config.sample_id, sample_key: performance_target} not in manifest["plan"]:
         raise ValueError("Sample and performance mode do not match the experiment plan.")
     # CREATE without IF NOT EXISTS refuses dirty/reused starting states.
     for layer in LAYERS:
@@ -209,7 +215,7 @@ def measure(spark, config: ExperimentConfig, performance_target: str) -> dict:
     report = {
         **result,
         "sample_id": config.sample_id,
-        "performance_target": performance_target,
+        sample_key: performance_target,
         "pipeline_call_seconds": elapsed,
         "timed_processing_seconds": (result["finished_at"] - result["started_at"]).total_seconds(),
         "stages": operational["stages"],
@@ -258,14 +264,16 @@ def assert_equivalent(expected, actual, *, keys: list[str] | None = None):
             raise ValueError("Gold output contains duplicate aggregation keys.")
 
 
-def audit(spark, config: ExperimentConfig) -> dict:
-    manifest = load_manifest(config)
+def audit(
+    spark, config: ExperimentConfig, *, plan=None, hashes=None, config_type=ExperimentConfig
+) -> dict:
+    manifest = load_manifest(config, plan=plan, hashes=hashes)
     snapshot = manifest["snapshot"]
     audit_versions(spark, snapshot)
     baseline = SnapshotConfig(catalog=config.catalog)
     outcomes = []
     for sample in manifest["plan"]:
-        case = ExperimentConfig(
+        case = config_type(
             catalog=config.catalog,
             end_month="2024-03",
             experiment_id=config.experiment_id,

@@ -14,7 +14,7 @@ variables:
   max_new_months:
     default: "3"
   schedule_pause_status:
-    default: UNPAUSED
+    default: PAUSED
 
 artifacts:
   pipeline:

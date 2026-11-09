@@ -1,0 +1,269 @@
+{
+  "experiment_id": "compute_20261105_a",
+  "status": "MEASURED_AND_VERIFIED",
+  "measured_on": "2026-11-06",
+  "started_at": "2026-11-06T02:30:51.198732+00:00",
+  "completed_at": "2026-11-06T03:51:15.017587+00:00",
+  "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/experiment_report.json",
+  "source_report_sha256": "39d39bc016ec40fd1999e3b0d34384f8135935e48d549446dd1be2fe9f7b05c6",
+  "source_archive": "/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/measured_sources/",
+  "post_run_evidence_manifest": "/Volumes/nyc_taxi_dev/benchmark/reports/compute_experiments/compute_20261105_a/post_run_evidence/manifest.json",
+  "post_run_evidence_manifest_sha256": "1767a5a573ebc10ef699e7eee738810c05835abe443b18ff6b59b106e2cdc5dc",
+  "measurement_software": {
+    "controller_python": "3.12.13",
+    "sdk": "0.157.0",
+    "base_git_commit": "d6fbc35",
+    "git_dirty": true,
+    "scope": "Measured with working-tree source, not a later clean commit. All seven archived measured Python files match the manifest hashes.",
+    "code_sha256": {
+      "compute_experiment.py": "be7559f2340373f13f920b43904de9d0d473eaf5d4d4e5603605a5a977a697b6",
+      "config.py": "42d78e18a2196d0d2b51224b5369c439b87b4d58462319d968bfa7ea9d25beb0",
+      "gold.py": "33c91bb853e3bf0a948a0910ac5900ec8df3370209c04450cd7e732a6d6ca023",
+      "pipeline.py": "7ade9ea1764b59f74880d8cfa5afda70bd845bef77de89a9a9fbd8f67577fcb4",
+      "pipeline_experiment.py": "c213fb282427b65900c3d96cbcbc7f36a478cf0845e9c1f1fbbfb02b5d3ef89e",
+      "sources.py": "a05c6a32c28eff7d0c3324f2bc4c50146e76bdf87b919434f815d687ea628300",
+      "transforms.py": "0af3d28e6ea385cd8fc908e265b4d8ad69ba601d272a9d3e0b37626190a8290c"
+    }
+  },
+  "dataset": {
+    "baseline_reference": "baseline_q1_2024.json",
+    "source_months": ["2024-01", "2024-02", "2024-03"],
+    "raw_parquet_bytes": 160389205,
+    "bronze_rows": 9554778,
+    "valid_silver_rows": 9551977,
+    "quarantine_rows": 2801,
+    "input_sha256": "c3697338ec37e60a434f89c8eee81cfb0fd90054e8cbba826faa0d373288b37c",
+    "scope": "Identical checksum-pinned raw Parquet and taxi zones, copied once into isolated inputs. Source months, not pickup-date filtering. Zero downloaded bytes in every replay."
+  },
+  "configuration": {
+    "samples_per_configuration": 3,
+    "order": ["serverless_1", "classic_1", "classic_2", "serverless_2", "serverless_3", "classic_3"],
+    "fresh_output_schemas_per_sample": true,
+    "job_task_retries": 0,
+    "serverless": {
+      "job_id": "1000705343340032",
+      "performance_target": "STANDARD",
+      "environment_version": "4",
+      "observed_spark_version": "4.2.0",
+      "observed_python_version": "3.12.3",
+      "hardware_capacity": "Managed by Databricks; not exposed or matched to classic."
+    },
+    "classic": {
+      "job_id": "349059024806557",
+      "runtime": "17.3 LTS",
+      "observed_spark_version": "4.0.0",
+      "observed_python_version": "3.12.3",
+      "runtime_engine": "PHOTON",
+      "driver_node_type": "Standard_D4s_v3",
+      "worker_node_type": "Standard_D4s_v3",
+      "drivers": 1,
+      "workers": 1,
+      "total_vcpus": 8,
+      "total_memory_gib": 32,
+      "availability": "ON_DEMAND_AZURE",
+      "autoscaling": false,
+      "instance_pools": false,
+      "fresh_job_cluster_per_sample": true,
+      "azure_vm_reuse_observed": true
+    },
+    "cache_policy": "Uncontrolled. Fresh Databricks job cluster IDs do not guarantee fresh underlying Azure VMs. Node timeline records map classic_1 and classic_2 to the same pair of Azure VM instance IDs.",
+    "scope": "Deployment-configuration comparison, not identical hardware/runtime stacks. Prepare and final audit use Performance Optimized serverless outside the six measurements. Production and frozen tables are not replay destinations."
+  },
+  "samples": [
+    {
+      "sample_id": "serverless_1", "compute_type": "SERVERLESS", "job_run_id": "518236464186146",
+      "job_duration_seconds": 546.375,
+      "pipeline_call_seconds": 193.41833713200003,
+      "timed_processing_seconds": 183.765947,
+      "task_setup_seconds": 195,
+      "task_execution_seconds": 350
+    },
+    {
+      "sample_id": "classic_1", "compute_type": "CLASSIC", "job_run_id": "676276780734245",
+      "cluster_id": "1106-024112-n7tbakyr",
+      "job_duration_seconds": 1070.454,
+      "pipeline_call_seconds": 418.21540141000014,
+      "timed_processing_seconds": 392.490279,
+      "task_setup_seconds": 561,
+      "task_execution_seconds": 509
+    },
+    {
+      "sample_id": "classic_2", "compute_type": "CLASSIC", "job_run_id": "517603226219773",
+      "cluster_id": "1106-025910-8bakfhrn",
+      "job_duration_seconds": 704.558,
+      "pipeline_call_seconds": 416.31750925100005,
+      "timed_processing_seconds": 391.450327,
+      "task_setup_seconds": 202,
+      "task_execution_seconds": 502
+    },
+    {
+      "sample_id": "serverless_2", "compute_type": "SERVERLESS", "job_run_id": "718133529863777",
+      "job_duration_seconds": 522.14,
+      "pipeline_call_seconds": 181.70770036,
+      "timed_processing_seconds": 173.131041,
+      "task_setup_seconds": 185,
+      "task_execution_seconds": 335
+    },
+    {
+      "sample_id": "serverless_3", "compute_type": "SERVERLESS", "job_run_id": "460428628943976",
+      "job_duration_seconds": 540.825,
+      "pipeline_call_seconds": 196.3755514300001,
+      "timed_processing_seconds": 187.359427,
+      "task_setup_seconds": 185,
+      "task_execution_seconds": 355
+    },
+    {
+      "sample_id": "classic_3", "compute_type": "CLASSIC", "job_run_id": "245092147352399",
+      "cluster_id": "1106-032850-5eur9nzn",
+      "job_duration_seconds": 952.004,
+      "pipeline_call_seconds": 363.8850152140001,
+      "timed_processing_seconds": 337.446768,
+      "task_setup_seconds": 501,
+      "task_execution_seconds": 450
+    }
+  ],
+  "summary": [
+    {
+      "compute_type": "SERVERLESS", "samples": 3,
+      "median_job_duration_seconds": 540.825,
+      "min_job_duration_seconds": 522.14,
+      "max_job_duration_seconds": 546.375,
+      "median_pipeline_call_seconds": 193.41833713200003,
+      "median_timed_processing_seconds": 183.765947,
+      "median_setup_seconds": 185
+    },
+    {
+      "compute_type": "CLASSIC", "samples": 3,
+      "median_job_duration_seconds": 952.004,
+      "min_job_duration_seconds": 704.558,
+      "max_job_duration_seconds": 1070.454,
+      "median_pipeline_call_seconds": 416.31750925100005,
+      "median_timed_processing_seconds": 391.450327,
+      "median_setup_seconds": 501
+    }
+  ],
+  "timing_scope": "Job duration is Jobs API end_time minus start_time; no client polling time. Task timers have API granularity and setup is not all scheduling/environment overhead. Pipeline-call time includes final operational writes; internal processing time ends before those writes. Keep these timers separate.",
+  "correctness": {
+    "status": "PASSED",
+    "audited_samples": 6,
+    "scope": "Exact Bronze/Silver/quarantine row multisets excluding per-run provenance. Exact Gold keys, counts and decimal metrics; floating aggregates use absolute 1e-9 plus relative 1e-9 tolerance. Frozen Q1 versions unchanged.",
+    "all_classic_clusters_terminated": true,
+    "both_experiment_jobs_inactive": true,
+    "remaining_managed_vm_disk_resources": 0
+  },
+  "billing": {
+    "status": "OBSERVED_COMPUTE_INFRASTRUCTURE_PROVISIONAL",
+    "latest_refresh": "cloud_cost_closeout_20261106_c",
+    "collection_id": "compute_billing_20261105_a",
+    "collection_status": "COLLECTED",
+    "collected_at": "2026-11-06T03:52:46.066906+00:00",
+    "collector_stopped_at": "2026-11-06T03:52:50.599381+00:00",
+    "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261105_a/report.json",
+    "source_report_sha256": "c569e0f10d0194689de5a01057184a1aca25753577e242518470c0c02cc8be0b",
+    "dbu_usage_records": 0,
+    "pending_run_ids": ["188354004487456", "518236464186146", "676276780734245", "517603226219773", "718133529863777", "460428628943976", "245092147352399", "676130838209778"],
+    "azure_actual_cost": {
+      "status": "PENDING",
+      "queried_at": "2026-11-06T03:33:42.305227+00:00",
+      "query_access": "AVAILABLE",
+      "resource_scope": "Workspace managed resource group, November 6 UTC, grouped by resource ID and service.",
+      "available_rows": 0,
+      "scope": "An initially throttled request succeeded after cooldown. Empty cost results are missing billing evidence, not zero VM/disk cost."
+    },
+    "azure_reference_evidence": {
+      "linux_on_demand_vm_rate_usd_per_node_hour": "0.234",
+      "vm_rate_meter_id": "8462aa11-a392-4ae4-87cf-2dbabe31d487",
+      "vm_rate_source": "https://prices.azure.com/api/retail/prices",
+      "region": "westus",
+      "sampled_storage": "classic_3: each of two VMs had one 64-GiB P6 and one 128-GiB P10 Premium_LRS managed disk. Active resource ClusterId tags matched the recorded job cluster.",
+      "scope": "Retail VM rate is a reference, not an observed bill or a complete VM/disk estimate. Earlier samples' disk capacities are not inferred from the third sample."
+    },
+    "per_sample_infrastructure_attribution": "The first two classic clusters reused the same VM instance IDs. Resource/day Azure cost aggregates cannot be counted separately for both runs; retain shared costs once and label any future allocation or amortization explicitly. Node timeline minute records are not complete Azure allocated lifetimes.",
+    "total_cost_estimate_usd": null,
+    "cost_winner": null,
+    "scope": "Initial collection snapshot: exact job/run IDs were queried, with prepare/audit separate, but no DBU records had arrived. See latest_refresh for subsequent observed DBU and Azure infrastructure accounting. Historical null totals and pending IDs describe this initial snapshot, not the latest collection. Original measurement report unchanged."
+  },
+  "billing_refresh_20261106_b": {
+    "collection_id": "compute_billing_20261106_b",
+    "status": "DBU_OBSERVED_AZURE_INFRASTRUCTURE_PENDING",
+    "collected_at": "2026-11-06T07:33:46.513668+00:00",
+    "collector_stopped_at": "2026-11-06T07:33:53.130136+00:00",
+    "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_b/report.json",
+    "source_report_sha256": "38ccd8124aae4dc7650ac19cf5fb8bf0bf0e51c30673c4c6aecbc4979739d8ec",
+    "measured_usage_records": 12,
+    "sample_dbu_list_price_cost_usd": {
+      "serverless_1": "0.134619",
+      "classic_1": "0.244478",
+      "classic_2": "0.218073",
+      "serverless_2": "0.123910",
+      "serverless_3": "0.135010",
+      "classic_3": "0.214627"
+    },
+    "median_serverless_dbu_list_price_cost_usd": "0.134619",
+    "median_classic_dbu_list_price_cost_usd": "0.218073",
+    "total_measured_serverless_dbu_list_price_cost_usd": "0.393539",
+    "total_measured_classic_dbu_list_price_cost_usd": "0.677178",
+    "serverless_median_dbu_cost_reduction_percent": "38.26883658224539489070173749",
+    "excluded_prepare_dbu_list_price_cost_usd": "0.121589",
+    "excluded_audit_dbu_list_price_cost_usd": "0.905398",
+    "azure_cost_query": {
+      "status": "THROTTLED",
+      "attempted_at": "2026-11-06T07:34:12.290040+00:00",
+      "http_status": 429,
+      "source_evidence": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_b/compute_azure_cost_20261106_b.json",
+      "source_evidence_sha256": "b5d4859af19b2d963255df405b59316d1d41c2b197ebc30a6bf1062280e0ac2c"
+    },
+    "total_cost_estimate_usd": null,
+    "total_cost_reduction_percent": null,
+    "scope": "Observed signed DBU records priced at effective USD list prices, provisional rather than invoices. All six measured runs have priced records; prepare/audit excluded. The 38.27% reduction compares median Databricks charges only, not total cloud cost. Serverless infrastructure is included in its SKU, but classic Azure VM/disk charges remain uncollected. Original measurement and earlier billing collection bytes are unchanged."
+  },
+  "cloud_cost_closeout_20261106_c": {
+    "collection_id": "compute_cost_closeout_20261106_c",
+    "status": "OBSERVED_COMPUTE_INFRASTRUCTURE_PROVISIONAL",
+    "collected_at": "2026-11-06T23:02:42.757797+00:00",
+    "source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_cost_closeout_20261106_c/report.json",
+    "source_report_sha256": "cf9906e1b590ed6f63a024ef938879e873b0b3fc328c11c05065cc54f469c9da",
+    "source_manifest": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_cost_closeout_20261106_c/manifest.json",
+    "source_manifest_sha256": "e6009c35ea743e00efdab6a0d8041ab93daa490794db8713e0d30e41bff410ea",
+    "azure_queried_at": "2026-11-06T17:34:47.799122+00:00",
+    "dbu_collected_at": "2026-11-06T17:36:28.485861+00:00",
+    "dbu_source_report": "/Volumes/nyc_taxi_dev/benchmark/reports/billing_refreshes/compute_billing_20261106_c/report.json",
+    "dbu_source_report_sha256": "dd1065cffe98b88ad0e5bc79aed83f1ce51231a6fed24fdcabe812b9f85c9d45",
+    "azure_source_report_sha256": "306dea06f9b853de929301cec270818640073e27eed457aa6fade6fc6ae8f583",
+    "azure_attributable_resource_service_rows": 20,
+    "unique_vm_resources": 4,
+    "unique_disk_resources": 8,
+    "unique_public_ip_resources": 4,
+    "classic_azure_service_costs_usd": {
+      "Virtual Machines": "0.401706630",
+      "Storage": "0.04744197",
+      "Virtual Network": "0.01798888888888888",
+      "Bandwidth": "0.000000044703483582"
+    },
+    "classic_azure_attributable_total_usd": "0.467137533592372462",
+    "excluded_shared_workspace_storage_usd": "0.0141080595",
+    "measured_dbu_totals_usd": {
+      "SERVERLESS": "0.393539",
+      "CLASSIC": "0.677178"
+    },
+    "total_costs_three_replays_usd": {
+      "SERVERLESS": "0.393539",
+      "CLASSIC": "1.144315533592372462"
+    },
+    "amortized_mean_cost_per_replay_usd": {
+      "SERVERLESS": "0.1311796666666666666666666667",
+      "CLASSIC": "0.3814385111974574873333333333"
+    },
+    "serverless_aggregate_cost_reduction_percent": "65.60922329136307290603518633",
+    "excluded_prepare_dbu_list_price_cost_usd": "0.121589",
+    "excluded_audit_dbu_list_price_cost_usd": "1.021279",
+    "cost_winner_for_observed_configurations": "SERVERLESS",
+    "scope": "Effective USD list-price DBU estimates plus observed Azure pre-tax resource costs. All four recorded VM IDs and eight disks have cost rows, including explicit zero-cost root-disk rows. Matching public IP and VM bandwidth charges are included. Shared VM resources across classic_1/classic_2 counted once. Compare totals across three measured replays per configuration, or amortized means, not median per-run infrastructure bills. Serverless infrastructure is included in its SKU. Shared workspace storage, ADLS storage, collector, prepare/audit, taxes and invoice-level adjustments are excluded. These are provisional attributable compute/infrastructure costs, not invoices or total project spending. Late audit DBU records changed its excluded cost; measured DBU costs were unchanged."
+  },
+  "interpretation": {
+    "serverless_median_job_time_reduction_percent": 43.190889954243886,
+    "serverless_median_pipeline_call_time_reduction_percent": 53.54066719894141,
+    "decision": "Keep Standard serverless for this workload on observed latency and attributable compute/infrastructure cost. Production already uses it; no newly realized production savings are claimed.",
+    "limitations": "Three trials per configuration on Q1 data. Runtime versions and hardware capacity differ, caches are uncontrolled, Azure VM reuse occurred, and classic setup varied substantially. Not a matched-hardware, concurrency, scaling, or general price-performance result. Combined cost compares three-replay totals or amortized means, not per-run infrastructure medians. Shared storage and invoice-level adjustments are excluded; observed costs remain provisional."
+  }
+}
